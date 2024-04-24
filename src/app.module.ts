@@ -14,7 +14,7 @@ import { AuthModule } from './auth/auth.module';
       password: 'password',
       database: 'motor-busca-sphere-db',
       entities: [User],
-      synchronize: true,
+      synchronize: false,
     }),
     UsersModule,
     AuthModule,

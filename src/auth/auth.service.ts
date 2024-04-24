@@ -1,5 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { authConstants } from 'src/auth/auth.constants';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 
@@ -12,6 +13,7 @@ export class AuthService {
 
   async validateUser(userEmail: string, userPassword: string): Promise<any> {
     const user = await this.usersService.findOneByEmail(userEmail);
+    console.log(user);
     if (!user) {
       throw new UnauthorizedException('Usuário ou Senha Inválidos');
     }
@@ -26,8 +28,8 @@ export class AuthService {
       access_token: this.jwtService.sign(
         { email: payload.email },
         {
-          secret: 'topSecret512',
-          expiresIn: '50s',
+          secret: authConstants.secret,
+          expiresIn: '1d',
         },
       ),
     };
