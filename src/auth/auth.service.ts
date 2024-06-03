@@ -1,8 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { authConstants } from 'src/auth/auth.constants';
+import * as bcrypt from 'bcrypt';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
+require('dotenv').config();
 
 @Injectable()
 export class AuthService {
@@ -11,16 +16,28 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(userEmail: string, userPassword: string): Promise<any> {
-    const user = await this.usersService.findOneByEmail(userEmail);
-    console.log(user);
+  async validateUser(email: string, password: string): Promise<any> {
+    const user = await this.usersService.findOneByEmail(email);
+
     if (!user) {
-      throw new UnauthorizedException('Usuário ou Senha Inválidos');
+      throw new BadRequestException('Usuário ou Senha Inválidos');
     }
-    if (user.password === userPassword) {
+
+    const passwordMatches = await this.comparePasswords(
+      password,
+      user.password,
+    );
+    if (passwordMatches) {
       return await this.gerarToken(user);
     }
     throw new UnauthorizedException('Usuário ou Senha Inválidos');
+  }
+
+  async comparePasswords(
+    password: string,
+    hashPassword: string,
+  ): Promise<boolean> {
+    return await bcrypt.compare(password, hashPassword);
   }
 
   async gerarToken(payload: User) {
@@ -28,7 +45,7 @@ export class AuthService {
       access_token: this.jwtService.sign(
         { email: payload.email },
         {
-          secret: authConstants.secret,
+          secret: process.env.SECRET_KEY_JWT,
           expiresIn: '1d',
         },
       ),

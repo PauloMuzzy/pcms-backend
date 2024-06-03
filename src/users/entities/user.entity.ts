@@ -1,13 +1,14 @@
 import {
   IsBoolean,
   IsEmail,
+  IsISO8601,
   IsNotEmpty,
   IsString,
   Length,
 } from 'class-validator';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('usuario')
+@Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -25,6 +26,11 @@ export class User {
   lastName: string;
 
   @IsNotEmpty()
+  @IsISO8601()
+  @Column({ type: 'date' })
+  dateOfBirth: Date;
+
+  @IsNotEmpty()
   @IsEmail()
   @Column({ length: 500 })
   email: string;
@@ -33,17 +39,12 @@ export class User {
   @Column({ length: 500 })
   password: string;
 
-  @IsBoolean()
-  @Column({ default: true })
-  active: boolean;
-
   @IsNotEmpty()
   @IsString()
   @Column({ default: 'user' })
-  accessProfile: string;
+  accessType: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @Column({ length: 100 })
-  accesses: string;
+  @IsBoolean()
+  @Column({ default: 1 })
+  active: number;
 }
