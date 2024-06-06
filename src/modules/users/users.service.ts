@@ -2,9 +2,9 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { CreateUserRequestDto } from 'src/users/dto/create-user/create-user-request.dto';
-import { FindAllUsersResponseDto } from 'src/users/dto/find-all-users/find-all-users-response.dto';
-import { User } from 'src/users/entities/user.entity';
+import { CreateUserRequestDto } from 'src/modules/users/dto/create-user/create-user-request.dto';
+import { FindAllUsersResponseDto } from 'src/modules/users/dto/find-all-users/find-all-users-response.dto';
+import { User } from 'src/modules/users/entities/user.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -75,16 +75,16 @@ export class UsersService {
     });
   }
 
-  async create(userParams: CreateUserRequestDto) {
+  async create(params: CreateUserRequestDto) {
     const password = this.generatePassword();
     const hashedPassword = await this.hashPassword(password);
 
     const user = new User();
-    user.name = userParams.name;
-    user.lastName = userParams.lastName;
-    user.email = userParams.email;
-    user.accessType = userParams.accessType;
-    user.dateOfBirth = new Date(userParams.dateOfBirth);
+    user.name = params.name;
+    user.lastName = params.lastName;
+    user.email = params.email;
+    user.accessType = params.accessType;
+    user.dateOfBirth = new Date(params.dateOfBirth);
     user.password = hashedPassword;
     user.active = 1;
 

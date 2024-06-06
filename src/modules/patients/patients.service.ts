@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreatePatientRequestDto } from 'src/patients/dto/create-patient/create-patient-request.dto';
-import { FindAllPatientsResponsetDto } from 'src/patients/dto/find-all-patients/find-all-patients-response.dto';
-import { Patient } from 'src/patients/entities/patient.entity';
+import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient/create-patient-request.dto';
+import { FindAllPatientsResponsetDto } from 'src/modules/patients/dto/find-all-patients/find-all-patients-response.dto';
+import { Patient } from 'src/modules/patients/entities/patient.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -12,21 +12,20 @@ export class PatientsService {
     private patientsRepository: Repository<Patient>,
   ) {}
 
-  async create(patientParams: CreatePatientRequestDto) {
+  async create(params: CreatePatientRequestDto) {
     const patient = new Patient();
-    patient.name = patientParams.name;
-    patient.lastName = patientParams.lastName;
-    patient.cpf = patientParams.cpf;
-    patient.email = patientParams.email;
-    patient.dateOfBirth = new Date(patientParams.dateOfBirth);
-    patient.age = patientParams.age;
-    patient.gender = patientParams.gender;
-    patient.profession = patientParams.profession;
-    patient.phone = patientParams.phone;
-    patient.emergencyContactName = patientParams.emergencyContactName;
-    patient.emergencyContactPhone = patientParams.emergencyContactPhone;
-    patient.emergencyContactRelationship =
-      patientParams.emergencyContactRelationship;
+    patient.name = params.name;
+    patient.lastName = params.lastName;
+    patient.cpf = params.cpf;
+    patient.email = params.email;
+    patient.dateOfBirth = new Date(params.dateOfBirth);
+    patient.age = params.age;
+    patient.gender = params.gender;
+    patient.profession = params.profession;
+    patient.phone = params.phone;
+    patient.emergencyContactName = params.emergencyContactName;
+    patient.emergencyContactPhone = params.emergencyContactPhone;
+    patient.emergencyContactRelationship = params.emergencyContactRelationship;
     patient.active = 1;
     patient.createdAt = new Date();
     patient.updatedAt = new Date();

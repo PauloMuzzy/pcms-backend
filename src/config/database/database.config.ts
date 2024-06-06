@@ -1,6 +1,6 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { Patient } from 'src/patients/entities/patient.entity';
-import { User } from 'src/users/entities/user.entity';
+import { Patient } from 'src/modules/patients/entities/patient.entity';
+import { User } from 'src/modules/users/entities/user.entity';
 require('dotenv').config();
 
 export const databaseConfig: TypeOrmModuleOptions = {

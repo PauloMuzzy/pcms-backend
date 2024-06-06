@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { CreateUserRequestDto } from 'src/users/dto/create-user/create-user-request.dto';
-import { FindAllUsersResponseDto } from 'src/users/dto/find-all-users/find-all-users-response.dto';
-import { UsersService } from 'src/users/users.service';
+import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
+import { CreateUserRequestDto } from 'src/modules/users/dto/create-user/create-user-request.dto';
+import { FindAllUsersResponseDto } from 'src/modules/users/dto/find-all-users/find-all-users-response.dto';
+import { UsersService } from 'src/modules/users/users.service';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -36,7 +36,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'Resource not found.' })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async create(@Body() CreateUserRequestDto: CreateUserRequestDto) {
-    await this.usersService.create(CreateUserRequestDto);
+  async create(@Body() body: CreateUserRequestDto) {
+    await this.usersService.create(body);
   }
 }
