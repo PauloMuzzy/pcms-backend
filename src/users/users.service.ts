@@ -75,16 +75,16 @@ export class UsersService {
     });
   }
 
-  async create(createUserDto: CreateUserRequestDto) {
+  async create(userParams: CreateUserRequestDto) {
     const password = this.generatePassword();
     const hashedPassword = await this.hashPassword(password);
 
     const user = new User();
-    user.name = createUserDto.name;
-    user.lastName = createUserDto.lastName;
-    user.email = createUserDto.email;
-    user.accessType = createUserDto.accessType;
-    user.dateOfBirth = new Date(createUserDto.dateOfBirth);
+    user.name = userParams.name;
+    user.lastName = userParams.lastName;
+    user.email = userParams.email;
+    user.accessType = userParams.accessType;
+    user.dateOfBirth = new Date(userParams.dateOfBirth);
     user.password = hashedPassword;
     user.active = 1;
 

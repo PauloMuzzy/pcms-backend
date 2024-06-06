@@ -9,13 +9,12 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
   app.enableCors({ origin: 'http://localhost:3000' });
-
-  // Swagger
   const config = new DocumentBuilder()
     .setTitle('Motor de busca Sphere API')
     .setDescription('Descrição da API')
     .setVersion('1.0')
     .addTag('Users')
+    .addTag('Patients')
     .addTag('Auth')
     .build();
   const document = SwaggerModule.createDocument(app, config);

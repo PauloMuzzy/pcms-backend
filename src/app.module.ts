@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { UsersModule } from 'src/users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { PatientsModule } from './patients/patients.module';
+import { Patient } from 'src/patients/entities/patient.entity';
 require('dotenv').config();
 
 @Module({
@@ -16,7 +18,7 @@ require('dotenv').config();
       username: 'user',
       password: 'password',
       database: 'motor-busca-sphere-db',
-      entities: [User],
+      entities: [User, Patient],
       synchronize: true,
     }),
     MailerModule.forRoot({
@@ -43,6 +45,7 @@ require('dotenv').config();
     }),
     UsersModule,
     AuthModule,
+    PatientsModule,
   ],
 })
 export class AppModule {}
