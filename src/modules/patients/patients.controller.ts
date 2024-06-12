@@ -11,7 +11,6 @@ import { PatientsService } from 'src/modules/patients/patients.service';
 export class PatientsController {
   constructor(private patientsService: PatientsService) {}
 
-  //@Public()
   @UseGuards(JwtAuthGuard)
   @Post('create')
   @ApiResponse({
@@ -26,7 +25,6 @@ export class PatientsController {
     await this.patientsService.create(body);
   }
 
-  //@Public()
   @UseGuards(JwtAuthGuard)
   @Get()
   @ApiResponse({

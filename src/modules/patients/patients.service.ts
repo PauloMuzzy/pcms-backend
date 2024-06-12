@@ -19,17 +19,14 @@ export class PatientsService {
     patient.cpf = params.cpf;
     patient.email = params.email;
     patient.dateOfBirth = new Date(params.dateOfBirth);
-    patient.age = params.age;
     patient.gender = params.gender;
     patient.profession = params.profession;
     patient.phone = params.phone;
     patient.emergencyContactName = params.emergencyContactName;
     patient.emergencyContactPhone = params.emergencyContactPhone;
     patient.emergencyContactRelationship = params.emergencyContactRelationship;
-    patient.active = 1;
     patient.createdAt = new Date();
     patient.updatedAt = new Date();
-
     const createdPatient = await this.patientsRepository.save(patient);
   }
 
@@ -42,7 +39,6 @@ export class PatientsService {
         'cpf',
         'email',
         'dateOfBirth',
-        'age',
         'gender',
         'profession',
         'phone',
@@ -61,7 +57,6 @@ export class PatientsService {
       patients.cpf = user.cpf;
       patients.email = user.email;
       patients.dateOfBirth = user.dateOfBirth;
-      patients.age = user.age;
       patients.gender = user.gender;
       patients.profession = user.profession;
       patients.phone = user.phone;

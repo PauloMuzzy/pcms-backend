@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDateString,
   IsEmail,
-  IsIn,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -42,13 +41,7 @@ export class CreatePatientRequestDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
-  age: number;
-
-  @ApiProperty()
-  @IsNotEmpty()
-  @IsString()
-  @IsIn(['M', 'F', 'O'])
-  gender: string;
+  gender: number;
 
   @ApiProperty()
   @IsNotEmpty()

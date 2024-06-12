@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDateString,
   IsEmail,
-  IsIn,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -46,14 +45,9 @@ export class FindAllPatientsResponsetDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumber()
-  age: number;
-
-  @ApiProperty()
-  @IsNotEmpty()
   @IsString()
-  @IsIn(['M', 'F', 'O'])
-  gender: string;
+  @IsNumber()
+  gender: number;
 
   @ApiProperty()
   @IsNotEmpty()

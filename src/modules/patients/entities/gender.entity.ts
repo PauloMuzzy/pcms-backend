@@ -1,5 +1,5 @@
 import { Patient } from 'src/modules/patients/entities/patient.entity';
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'gender' })
 export class Gender {
@@ -9,6 +9,6 @@ export class Gender {
   @Column({ length: 50 })
   description: string;
 
-  @OneToOne(() => Patient, (patient) => patient.gender)
-  patient: Patient;
+  @OneToMany(() => Patient, (patient) => patient.gender)
+  patients: Patient[];
 }
