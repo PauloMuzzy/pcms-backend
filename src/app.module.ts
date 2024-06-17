@@ -6,6 +6,7 @@ import { mailerConfig } from 'src/config/mailer/mailer.config';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { PatientsModule } from 'src/modules/patients/patients.module';
 import { UsersModule } from 'src/modules/users/users.module';
+import { ReportsModule } from './modules/reports/reports.module';
 require('dotenv').config();
 
 @Module({
@@ -15,6 +16,7 @@ require('dotenv').config();
     UsersModule,
     AuthModule,
     PatientsModule,
+    ReportsModule,
   ],
 })
 export class AppModule {}

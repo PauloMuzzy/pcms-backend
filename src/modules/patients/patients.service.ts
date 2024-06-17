@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient/create-patient-request.dto';
-import { FindAllPatientsResponsetDto } from 'src/modules/patients/dto/find-all-patients/find-all-patients-response.dto';
+import { FindAllPatientsResponseDto } from 'src/modules/patients/dto/find-all-patients/find-all-patients-response.dto';
 import { Patient } from 'src/modules/patients/entities/patient.entity';
 import { Repository } from 'typeorm';
 
@@ -30,7 +30,7 @@ export class PatientsService {
     const createdPatient = await this.patientsRepository.save(patient);
   }
 
-  async findAll(): Promise<FindAllPatientsResponsetDto[]> {
+  async findAll(): Promise<FindAllPatientsResponseDto[]> {
     const users = await this.patientsRepository.find({
       select: [
         'id',
@@ -50,7 +50,7 @@ export class PatientsService {
     });
 
     return users.map((user) => {
-      const patients = new FindAllPatientsResponsetDto();
+      const patients = new FindAllPatientsResponseDto();
       patients.id = user.id;
       patients.name = user.name;
       patients.lastName = user.lastName;

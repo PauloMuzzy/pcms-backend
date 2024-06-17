@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
+import { Public } from 'src/modules/auth/public.decorator';
 import { CreateUserRequestDto } from 'src/modules/users/dto/create-user/create-user-request.dto';
 import { FindAllUsersResponseDto } from 'src/modules/users/dto/find-all-users/find-all-users-response.dto';
 import { UsersService } from 'src/modules/users/users.service';
@@ -26,7 +27,8 @@ export class UsersController {
     return await this.usersService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
+  @Public()
   @Post('create')
   @ApiResponse({
     status: 201,
