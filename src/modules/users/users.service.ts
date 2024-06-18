@@ -2,8 +2,8 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { CreateUserRequestDto } from 'src/modules/users/dto/create-user/create-user-request.dto';
-import { FindAllUsersResponseDto } from 'src/modules/users/dto/find-all-users/find-all-users-response.dto';
+import { CreateUserRequestDto } from 'src/modules/users/dto/create-user-request.dto';
+import { FindAllUsersResponseDto } from 'src/modules/users/dto/find-all-users-response.dto';
 import { User } from 'src/modules/users/entities/user.entity';
 import { Repository } from 'typeorm';
 

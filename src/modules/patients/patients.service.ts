@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient/create-patient-request.dto';
-import { FindAllPatientsResponseDto } from 'src/modules/patients/dto/find-all-patients/find-all-patients-response.dto';
+import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
+import { FindAllPatientsResponseDto } from 'src/modules/patients/dto/find-all-patients-response.dto';
 import { Patient } from 'src/modules/patients/entities/patient.entity';
 import { Repository } from 'typeorm';
 
