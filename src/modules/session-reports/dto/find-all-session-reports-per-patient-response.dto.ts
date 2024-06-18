@@ -22,7 +22,7 @@ export class report {
   date: Date;
 }
 
-export class FindSessionReportsPerPatientResponseDto {
+export class FindAllSessionReportsPerPatientResponseDto {
   @ApiProperty()
   patientId: number;
 
