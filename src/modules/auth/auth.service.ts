@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { User } from 'src/modules/users/entities/user.entity';
+import { LoginResponseDto } from 'src/modules/auth/dto/login-response.dto';
 import { UsersService } from 'src/modules/users/users.service';
 require('dotenv').config();
 
@@ -16,39 +16,28 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<any> {
-    const user = await this.usersService.findOneByEmail(email);
+  async validateUser(
+    email: string,
+    password: string,
+  ): Promise<LoginResponseDto> {
+    const hashPassword: string = await this.usersService.findPassword(email);
 
-    if (!user) {
+    if (!hashPassword) {
       throw new BadRequestException('Usuário ou Senha Inválidos');
     }
 
-    const passwordMatches = await this.comparePasswords(
-      password,
-      user.password,
-    );
-    if (passwordMatches) {
-      return await this.gerarToken(user);
+    if (await bcrypt.compare(password, hashPassword)) {
+      return {
+        access_token: this.jwtService.sign(
+          { email },
+          {
+            secret: process.env.SECRET_KEY_JWT,
+            expiresIn: '1d',
+          },
+        ),
+      };
     }
+
     throw new UnauthorizedException('Usuário ou Senha Inválidos');
-  }
-
-  async comparePasswords(
-    password: string,
-    hashPassword: string,
-  ): Promise<boolean> {
-    return await bcrypt.compare(password, hashPassword);
-  }
-
-  async gerarToken(payload: User) {
-    return {
-      access_token: this.jwtService.sign(
-        { email: payload.email },
-        {
-          secret: process.env.SECRET_KEY_JWT,
-          expiresIn: '1d',
-        },
-      ),
-    };
   }
 }

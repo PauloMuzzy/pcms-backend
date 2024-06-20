@@ -4,7 +4,6 @@ import {
   IsEmail,
   IsNotEmpty,
   IsNumber,
-  IsOptional,
   IsString,
   Length,
 } from 'class-validator';
@@ -22,11 +21,10 @@ export class CreatePatientRequestDto {
   @Length(1, 500)
   lastName: string;
 
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
-  @Length(11, 11)
-  cpf?: string;
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  cpf: number;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -45,8 +43,8 @@ export class CreatePatientRequestDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsString()
-  profession: string;
+  @IsNumber()
+  profession: number;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -65,6 +63,6 @@ export class CreatePatientRequestDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsString()
-  emergencyContactRelationship: string;
+  @IsNumber()
+  emergencyContactRelationship: number;
 }

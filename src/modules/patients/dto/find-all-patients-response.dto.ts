@@ -10,9 +10,6 @@ export class FindAllPatientsResponseDto {
   @ApiProperty()
   lastName: string;
 
-  @ApiProperty({ required: false })
-  cpf?: string;
-
   @ApiProperty()
   email: string;
 

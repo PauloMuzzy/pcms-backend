@@ -11,12 +11,12 @@ async function bootstrap() {
   app.enableCors({ origin: 'http://localhost:3000' });
   const config = new DocumentBuilder()
     .setTitle('PCMS API')
-    .setDescription('Descrição da API')
+    .setDescription('The PCMS API description')
     .setVersion('1.0')
+    .addBearerAuth()
     .addTag('Users')
     .addTag('Patients')
     .addTag('Auth')
-    .addTag('Reports')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
