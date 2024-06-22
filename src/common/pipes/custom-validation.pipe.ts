@@ -21,14 +21,16 @@ export class CustomValidationPipe
     const object = plainToClass(metatype, value);
     const errors = await validate(object);
     if (errors.length > 0) {
+      const schemaErrors = errors.map((error) => ({
+        field: error.property,
+        error: Object.values(error.constraints),
+      }));
+
       throw new BadRequestException({
-        message: 'Alguns parâmetros não foram passados ou estão incorretos',
-        error: 'Bad Request',
         statusCode: 400,
-        schemaError: errors.map((error) => ({
-          field: error.property,
-          error: Object.values(error.constraints),
-        })),
+        error: 'Bad Request',
+        message: 'Validation failed',
+        details: schemaErrors,
       });
     }
     return value;

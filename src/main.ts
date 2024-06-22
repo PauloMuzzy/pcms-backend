@@ -1,13 +1,13 @@
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { config } from 'dotenv';
+import { CustomValidationPipe } from 'src/common/pipes/custom-validation.pipe';
 import { AppModule } from './app.module';
 config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new CustomValidationPipe());
   app.enableCors({ origin: 'http://localhost:3000' });
   const config = new DocumentBuilder()
     .setTitle('PCMS API')

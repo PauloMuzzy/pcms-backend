@@ -8,6 +8,7 @@ import {
   Put,
   UseFilters,
   UseGuards,
+  UsePipes,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
@@ -16,6 +17,7 @@ import {
   ApiOkResponse,
 } from 'src/common/decorators/api-responses.decorator';
 import { ConflictExceptionFilter } from 'src/common/filters/conflict-exception.filter';
+import { CustomValidationPipe } from 'src/common/pipes/custom-validation.pipe';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { Public } from 'src/modules/auth/public.decorator';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
@@ -35,6 +37,7 @@ export class PatientsController {
   @UseFilters(ConflictExceptionFilter)
   @ApiCommonResponses()
   @ApiCreatedResponse()
+  @UsePipes(new CustomValidationPipe())
   async create(@Body() body: CreatePatientRequestDto) {
     await this.patientsService.create(body);
   }
