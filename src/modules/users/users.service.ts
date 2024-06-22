@@ -1,7 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { DatabaseService } from 'src/modules/database/database.service';
+import { DatabaseService } from 'src/database/database.service';
 import { CreateUserRequestDto } from 'src/modules/users/dto/create-user-request.dto';
 
 @Injectable()
@@ -45,19 +45,6 @@ export class UsersService {
     });
   }
 
-  async findPassword(email: string): Promise<string> {
-    const SQL = `
-      SELECT 
-          password
-      FROM 
-          users
-      WHERE 
-          email = ?`;
-
-    const result = await this.dbService.query(SQL, [email]);
-    return result[0].password;
-  }
-
   async create(params: CreateUserRequestDto) {
     const password = this.generatePassword();
     const hashedPassword = await this.hashPassword(password);
@@ -74,5 +61,36 @@ export class UsersService {
         console.error('Erro ao enviar e-mail:', error);
       }
     }
+  }
+
+  async findOnebyEmail(email: string): Promise<{
+    id: number;
+    name: string;
+    email: string;
+    password: string;
+  }> {
+    const SQL = `
+      SELECT 
+        *
+      FROM 
+          users
+      WHERE 
+          email = ?`;
+
+    const result = await this.dbService.query(SQL, [email]);
+    return result[0];
+  }
+
+  async findOne(uuid: string): Promise<any> {
+    const SQL = `
+      SELECT 
+        *
+      FROM 
+          users
+      WHERE 
+          id = ?`;
+
+    const result = await this.dbService.query(SQL, [uuid]);
+    return result[0];
   }
 }

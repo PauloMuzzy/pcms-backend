@@ -65,4 +65,9 @@ export class CreatePatientRequestDto {
   @IsNotEmpty()
   @IsNumber()
   emergencyContactRelationship: number;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsNumber()
+  active: number;
 }

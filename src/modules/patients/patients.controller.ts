@@ -1,23 +1,27 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
   Put,
+  UseFilters,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
-import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
-import { FindAllPatientsResponseDto } from 'src/modules/patients/dto/find-all-patients-response.dto';
-import { UpdateOnePatientRequestDto } from 'src/modules/patients/dto/update-one-patient-request.dto';
-import { PatientsService } from 'src/modules/patients/patients.service';
 import {
   ApiCommonResponses,
   ApiCreatedResponse,
   ApiOkResponse,
-} from 'src/utils/decorators/api-responses.decorator';
+} from 'src/common/decorators/api-responses.decorator';
+import { ConflictExceptionFilter } from 'src/common/filters/conflict-exception.filter';
+import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
+import { Public } from 'src/modules/auth/public.decorator';
+import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
+import { FindAllPatientsResponseDto } from 'src/modules/patients/dto/find-all-patients-response.dto';
+import { UpdateOnePatientRequestDto } from 'src/modules/patients/dto/update-one-patient-request.dto';
+import { PatientsService } from 'src/modules/patients/patients.service';
 
 @ApiTags('Patients')
 @Controller('patients')
@@ -25,8 +29,10 @@ import {
 export class PatientsController {
   constructor(private patientsService: PatientsService) {}
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
+  @Public()
   @Post('create')
+  @UseFilters(ConflictExceptionFilter)
   @ApiCommonResponses()
   @ApiCreatedResponse()
   async create(@Body() body: CreatePatientRequestDto) {
@@ -66,5 +72,13 @@ export class PatientsController {
     @Param('patientUUID') patientUUID: string,
   ) {
     await this.patientsService.updateOne(patientUUID, body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':patientUUID')
+  @ApiCommonResponses()
+  @ApiOkResponse()
+  async deleteOne(@Param('patientUUID') patientUUID: string) {
+    await this.patientsService.deleteOne(patientUUID);
   }
 }

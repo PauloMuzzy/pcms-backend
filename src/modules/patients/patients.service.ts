@@ -1,17 +1,24 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { CustomException } from 'src/exceptions/custom.exception';
-import { DatabaseService } from 'src/modules/database/database.service';
+import { CustomException } from 'src/common/exceptions/custom.exception';
+import { ValidationService } from 'src/common/services/validation/validation.service';
+import { DatabaseService } from 'src/database/database.service';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
 import { FindAllPatientsResponseDto } from 'src/modules/patients/dto/find-all-patients-response.dto';
 
 @Injectable()
 export class PatientsService {
   constructor(
+    private readonly validationService: ValidationService,
     private readonly dbService: DatabaseService,
     @Inject('UUID') private uuidv4: () => string,
   ) {}
 
   async create(params: CreatePatientRequestDto): Promise<void> {
+    await this.validationService.checkForDuplicates('patients', {
+      cpf: params.cpf,
+      email: params.email,
+    });
+
     const SQL = `
       INSERT INTO 
         patients 
@@ -34,44 +41,20 @@ export class PatientsService {
             ?,?,?,?,?,?,?,?,?,?,?,?
           )`;
 
-    try {
-      await this.dbService.query(SQL, [
-        this.uuidv4(),
-        params.name,
-        params.lastName,
-        params.cpf,
-        params.email,
-        params.dateOfBirth,
-        params.profession,
-        params.phone,
-        params.emergencyContactName,
-        params.emergencyContactPhone,
-        params.emergencyContactRelationship,
-        params.gender,
-      ]);
-    } catch (error) {
-      if (error.code === 'ER_DUP_ENTRY') {
-        if (error.message.includes('cpf')) {
-          throw new CustomException(
-            'CPF já cadastrado na base de dados',
-            'CPF_CONFLICT',
-            HttpStatus.CONFLICT,
-          );
-        } else if (error.message.includes('email')) {
-          throw new CustomException(
-            'Email já cadastrado na base de dados',
-            'EMAIL_CONFLICT',
-            HttpStatus.CONFLICT,
-          );
-        } else {
-          throw new CustomException(
-            'Registro duplicado na base de dados',
-            'REGISTER_CONFLICT',
-            HttpStatus.CONFLICT,
-          );
-        }
-      }
-    }
+    await this.dbService.query(SQL, [
+      this.uuidv4(),
+      params.name,
+      params.lastName,
+      params.cpf,
+      params.email,
+      params.dateOfBirth,
+      params.profession,
+      params.phone,
+      params.emergencyContactName,
+      params.emergencyContactPhone,
+      params.emergencyContactRelationship,
+      params.gender,
+    ]);
   }
 
   async findAll(): Promise<FindAllPatientsResponseDto[]> {
@@ -160,6 +143,7 @@ export class PatientsService {
         emergencyContactName = ?,
         emergencyContactPhone = ?,
         emergencyContactRelationshipId = ?
+        active = ?
       WHERE id = ?
       LIMIT 1;
     `;
@@ -176,6 +160,7 @@ export class PatientsService {
       params.emergencyContactName,
       params.emergencyContactPhone,
       params.emergencyContactRelationship,
+      params.active,
       patientUUID,
     ]);
 
@@ -200,5 +185,21 @@ export class PatientsService {
         HttpStatus.NOT_FOUND,
       );
     }
+  }
+
+  async deleteOne(patientUUID: string): Promise<void> {
+    await this.isPatientRegistered(patientUUID);
+
+    const SQL = `
+      DELETE FROM patients WHERE id = ? LIMIT 1;
+    `;
+
+    const result = await this.dbService.query(SQL, [patientUUID]);
+    if (result.affectedRows === 0)
+      throw new CustomException(
+        'Paciente não excluído',
+        'NOT_FOUND',
+        HttpStatus.NOT_FOUND,
+      );
   }
 }

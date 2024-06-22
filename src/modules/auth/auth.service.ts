@@ -20,16 +20,16 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<LoginResponseDto> {
-    const hashPassword: string = await this.usersService.findPassword(email);
+    const user = await this.usersService.findOnebyEmail(email);
 
-    if (!hashPassword) {
+    if (!user.password) {
       throw new BadRequestException('Usuário ou Senha Inválidos');
     }
 
-    if (await bcrypt.compare(password, hashPassword)) {
+    if (await bcrypt.compare(password, user.password)) {
       return {
         access_token: this.jwtService.sign(
-          { email },
+          { id: user.id },
           {
             secret: process.env.SECRET_KEY_JWT,
             expiresIn: '1d',
