@@ -24,8 +24,8 @@ export class CreatePatientRequestDto {
   @ApiProperty()
   @IsNotEmpty({ message: 'CPF não pode ser vazio' })
   @IsNumber({}, { message: 'CPF deve ser um número' })
-  @Length(11, 11, { message: 'CPF deve ter 11 caracteres' })
-  cpf: number;
+  @Length(1, 11, { message: 'CPF deve ter 11 caracteres' })
+  cpf: string;
 
   @ApiProperty()
   @IsNotEmpty({ message: 'Email não pode ser vazio' })
