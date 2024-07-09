@@ -5,6 +5,7 @@ import { mailerConfig } from 'src/config/mailer/mailer.config';
 import { DatabaseModule } from 'src/database/database.module';
 import { AditionalInformationsModule } from 'src/modules/aditional-informations/aditional-informations.module';
 import { AuthModule } from 'src/modules/auth/auth.module';
+import { OptionsModule } from 'src/modules/options/options.module';
 
 import { PatientsModule } from 'src/modules/patients/patients.module';
 import { SessionReportsController } from 'src/modules/session-reports/session-reports.controller';
@@ -22,6 +23,7 @@ require('dotenv').config();
     PatientsModule,
     SessionReportsModule,
     AditionalInformationsModule,
+    OptionsModule,
   ],
   controllers: [SessionReportsController],
   providers: [SessionReportsService, ValidationService],

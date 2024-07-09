@@ -3,7 +3,6 @@ import {
   IsDateString,
   IsEmail,
   IsNotEmpty,
-  IsNumber,
   IsString,
   Length,
 } from 'class-validator';
@@ -42,13 +41,13 @@ export class CreatePatientRequestDto {
 
   @ApiProperty()
   @IsNotEmpty({ message: 'O gênero não pode estar vazio' })
-  @IsNumber({}, { message: 'O gênero deve ser um número' })
-  gender: number;
+  @IsString({ message: 'O gênero deve ser uma string' })
+  gender: string;
 
   @ApiProperty()
   @IsNotEmpty({ message: 'A profissão não pode estar vazia' })
-  @IsNumber({}, { message: 'A profissão deve ser um número' })
-  profession: number;
+  @IsString({ message: 'A profissão deve ser uma string' })
+  profession: string;
 
   @ApiProperty()
   @IsNotEmpty({ message: 'O telefone não pode estar vazio' })
@@ -75,14 +74,13 @@ export class CreatePatientRequestDto {
   @IsNotEmpty({
     message: 'O parentesco do contato de emergência não pode estar vazio',
   })
-  @IsNumber(
-    {},
-    { message: 'O parentesco do contato de emergência deve ser um número' },
-  )
-  emergencyContactRelationship: number;
+  @IsString({
+    message: 'O parentesco do contato de emergência deve ser um número',
+  })
+  emergencyContactRelationship: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 1 })
   @IsNotEmpty({ message: 'O status ativo não pode estar vazio' })
-  @IsNumber({}, { message: 'O status ativo deve ser um número' })
-  active: number;
+  @IsString({ message: 'O status ativo deve ser uma string' })
+  active: string;
 }

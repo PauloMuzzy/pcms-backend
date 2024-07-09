@@ -1,5 +1,6 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { CustomException } from 'src/common/exceptions/custom.exception';
+import { formatISODateToYYYYMMDD } from 'src/common/functions/format-date';
 import { ValidationService } from 'src/common/services/validation/validation.service';
 import { DatabaseService } from 'src/database/database.service';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
@@ -47,7 +48,7 @@ export class PatientsService {
       params.lastName,
       params.cpf,
       params.email,
-      params.dateOfBirth,
+      formatISODateToYYYYMMDD(params.dateOfBirth),
       params.profession,
       params.phone,
       params.emergencyContactName,
