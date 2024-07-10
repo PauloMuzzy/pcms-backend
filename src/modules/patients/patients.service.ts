@@ -77,7 +77,7 @@ export class PatientsService {
       INNER JOIN genders g ON p.genderId = g.id
       INNER JOIN professions prof ON p.professionId = prof.id
       INNER JOIN emergency_contact_relationships ecr ON p.emergencyContactRelationshipId = ecr.id
-      WHERE p.active = 1;
+      WHERE p.active = 1 ORDER BY p.createdAt DESC;
     `;
 
     const result = await this.dbService.query(SQL);
