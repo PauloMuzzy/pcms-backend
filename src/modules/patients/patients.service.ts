@@ -1,6 +1,8 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { QueryBuilderDto } from 'src/common/dtos/query-builder.dto';
 import { CustomException } from 'src/common/exceptions/custom.exception';
 import { formatISODateToYYYYMMDD } from 'src/common/functions/format-date';
+import { TableInfo, queryBuilder } from 'src/common/functions/query-builder';
 import { ValidationService } from 'src/common/services/validation/validation.service';
 import { DatabaseService } from 'src/database/database.service';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
@@ -22,7 +24,7 @@ export class PatientsService {
 
     const SQL = `
       INSERT INTO 
-        patients 
+        patients
           (
             id,
             name, 
@@ -77,7 +79,6 @@ export class PatientsService {
       INNER JOIN genders g ON p.genderId = g.id
       INNER JOIN professions prof ON p.professionId = prof.id
       INNER JOIN emergency_contact_relationships ecr ON p.emergencyContactRelationshipId = ecr.id
-      WHERE p.active = 1 ORDER BY p.createdAt DESC;
     `;
 
     const result = await this.dbService.query(SQL);
@@ -202,5 +203,49 @@ export class PatientsService {
         'NOT_FOUND',
         HttpStatus.NOT_FOUND,
       );
+  }
+
+  async find(queryBuilderDto: QueryBuilderDto) {
+    const SQL = `
+    SELECT 
+        p.id,
+        p.name,
+        p.lastName,
+        p.email,
+        p.dateOfBirth,
+        p.phone,
+        p.emergencyContactName,
+        p.emergencyContactPhone,
+        p.active,
+        prof.name AS profession,
+        g.name AS gender,
+        ecr.name AS emergencyContactRelationship
+    FROM patients p
+    INNER JOIN genders g ON p.genderId = g.id
+    INNER JOIN professions prof ON p.professionId = prof.id
+    INNER JOIN emergency_contact_relationships ecr ON p.emergencyContactRelationshipId = ecr.id
+  `;
+    return queryBuilderDto;
+    const tables: TableInfo[] = [
+      {
+        alias: 'p',
+        fields: [
+          'id',
+          'name',
+          'lastName',
+          'email',
+          'dateOfBirth',
+          'phone',
+          'emergencyContactName',
+          'emergencyContactPhone',
+          'active',
+        ],
+      },
+      { alias: 'g', fields: ['gender'] },
+      { alias: 'prof', fields: ['profession'] },
+      { alias: 'ecr', fields: ['emergencyContactRelationship'] },
+    ];
+    const finalSQL = queryBuilder(queryBuilderDto, SQL, tables);
+    return finalSQL;
   }
 }
