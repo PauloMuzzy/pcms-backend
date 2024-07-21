@@ -1,5 +1,6 @@
 import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
+import { LoggerModule } from 'src/common/modules/logger/logger.module';
 import { ValidationService } from 'src/common/services/validation/validation.service';
 import { mailerConfig } from 'src/config/mailer/mailer.config';
 import { DatabaseModule } from 'src/database/database.module';
@@ -24,6 +25,7 @@ require('dotenv').config();
     SessionReportsModule,
     AditionalInformationsModule,
     OptionsModule,
+    LoggerModule,
   ],
   controllers: [SessionReportsController],
   providers: [SessionReportsService, ValidationService],

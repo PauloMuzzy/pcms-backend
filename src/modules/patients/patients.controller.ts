@@ -17,13 +17,13 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
 } from 'src/common/decorators/api-responses.decorator';
-import { QueryBuilderDto } from 'src/common/dtos/query-builder.dto';
 import { ConflictExceptionFilter } from 'src/common/filters/conflict-exception.filter';
-import { CustomQueryPipe } from 'src/common/pipes/custom-query-validation.pipe';
-import { CustomValidationPipe } from 'src/common/pipes/custom-validation.pipe';
+import { CustomRequestValidatorPipe } from 'src/common/pipes/custom-request-validator.pipe';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
+import { Public } from 'src/modules/auth/public.decorator';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
 import { FindAllPatientsResponseDto } from 'src/modules/patients/dto/find-all-patients-response.dto';
+import { FindPatientRequestDto } from 'src/modules/patients/dto/find-patients-request.dto';
 import { UpdateOnePatientRequestDto } from 'src/modules/patients/dto/update-one-patient-request.dto';
 import { PatientsService } from 'src/modules/patients/patients.service';
 
@@ -38,21 +38,8 @@ export class PatientsController {
   @UseFilters(ConflictExceptionFilter)
   @ApiCommonResponses()
   @ApiCreatedResponse()
-  @UsePipes(new CustomValidationPipe())
   async create(@Body() body: CreatePatientRequestDto) {
     await this.patientsService.create(body);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get(':patientUUID')
-  @ApiCommonResponses()
-  @ApiResponse({
-    status: 200,
-    description: 'Successful operation',
-    type: FindAllPatientsResponseDto,
-  })
-  async findById(@Param('patientUUID') patientUUID: string) {
-    return await this.patientsService.findOne(patientUUID);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -74,16 +61,17 @@ export class PatientsController {
     await this.patientsService.deleteOne(patientUUID);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get()
+  //@UseGuards(JwtAuthGuard)
+  @Public()
+  @UsePipes(new CustomRequestValidatorPipe(FindPatientRequestDto))
   @ApiCommonResponses()
-  @UsePipes(new CustomQueryPipe())
   @ApiResponse({
     status: 200,
     description: 'Successful operation.',
     type: [FindAllPatientsResponseDto],
   })
-  async find(@Query() queryBuilderDto: QueryBuilderDto) {
-    return await this.patientsService.find(queryBuilderDto);
+  @Get()
+  async find(@Query() requestParameters: FindPatientRequestDto) {
+    return await this.patientsService.find(requestParameters);
   }
 }

@@ -1,13 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { config } from 'dotenv';
-import { CustomValidationPipe } from 'src/common/pipes/custom-validation.pipe';
+import { GlobalExceptionFilter } from 'src/common/filters/global-exception.filter';
+import { Logger } from 'src/common/modules/logger/logger.service';
 import { AppModule } from './app.module';
 config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.useGlobalPipes(new CustomValidationPipe());
+  const logger = app.get(Logger);
+  app.useGlobalFilters(new GlobalExceptionFilter(logger));
   app.enableCors({ origin: 'http://localhost:3000' });
   const config = new DocumentBuilder()
     .setTitle('PCMS API')

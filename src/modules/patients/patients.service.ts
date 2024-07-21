@@ -1,12 +1,9 @@
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { QueryBuilderDto } from 'src/common/dtos/query-builder.dto';
 import { CustomException } from 'src/common/exceptions/custom.exception';
 import { formatISODateToYYYYMMDD } from 'src/common/functions/format-date';
-import { TableInfo, queryBuilder } from 'src/common/functions/query-builder';
 import { ValidationService } from 'src/common/services/validation/validation.service';
 import { DatabaseService } from 'src/database/database.service';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
-import { FindAllPatientsResponseDto } from 'src/modules/patients/dto/find-all-patients-response.dto';
 
 @Injectable()
 export class PatientsService {
@@ -15,6 +12,21 @@ export class PatientsService {
     private readonly dbService: DatabaseService,
     @Inject('UUID') private uuidv4: () => string,
   ) {}
+
+  async isPatientRegistered(patientUUID: string): Promise<void> {
+    const SQL = `
+      SELECT id FROM patients WHERE id = ?;
+    `;
+
+    const result = await this.dbService.query(SQL, [patientUUID]);
+    if (result.length === 0) {
+      throw new CustomException(
+        'Paciente não encontrado',
+        'NOT_FOUND',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
 
   async create(params: CreatePatientRequestDto): Promise<void> {
     await this.validationService.checkForDuplicates('patients', {
@@ -58,71 +70,6 @@ export class PatientsService {
       params.emergencyContactRelationship,
       params.gender,
     ]);
-  }
-
-  async findAll(): Promise<FindAllPatientsResponseDto[]> {
-    const SQL = `
-      SELECT 
-          p.id,
-          p.name,
-          p.lastName,
-          p.email,
-          p.dateOfBirth,
-          prof.name AS profession,
-          p.phone,
-          p.emergencyContactName,
-          p.emergencyContactPhone,
-          p.active,
-          g.name AS gender,
-          ecr.name AS emergencyContactRelationship
-      FROM patients p
-      INNER JOIN genders g ON p.genderId = g.id
-      INNER JOIN professions prof ON p.professionId = prof.id
-      INNER JOIN emergency_contact_relationships ecr ON p.emergencyContactRelationshipId = ecr.id
-    `;
-
-    const result = await this.dbService.query(SQL);
-    if (result.length === 0)
-      throw new CustomException(
-        'Nenhum paciente encontrado',
-        'NOT_FOUND',
-        HttpStatus.NOT_FOUND,
-      );
-
-    return result;
-  }
-
-  async findOne(patientUUID: string): Promise<FindAllPatientsResponseDto> {
-    const SQL = `
-      SELECT 
-          p.id,
-          p.name,
-          p.lastName,
-          p.email,
-          p.dateOfBirth,
-          prof.name AS profession,
-          p.phone,
-          p.emergencyContactName,
-          p.emergencyContactPhone,
-          p.active,
-          g.name AS gender,
-          ecr.name AS emergencyContactRelationship
-      FROM patients p
-      INNER JOIN genders g ON p.genderId = g.id
-      INNER JOIN professions prof ON p.professionId = prof.id
-      INNER JOIN emergency_contact_relationships ecr ON p.emergencyContactRelationshipId = ecr.id
-      WHERE p.active = 1 AND p.id = ?;
-    `;
-
-    const result = await this.dbService.query(SQL, [patientUUID]);
-    if (result.length === 0)
-      throw new CustomException(
-        'Paciente não encontrado',
-        'NOT_FOUND',
-        HttpStatus.NOT_FOUND,
-      );
-
-    return result[0];
   }
 
   async updateOne(
@@ -174,21 +121,6 @@ export class PatientsService {
       );
   }
 
-  async isPatientRegistered(patientUUID: string): Promise<void> {
-    const SQL = `
-      SELECT id FROM patients WHERE id = ?;
-    `;
-
-    const result = await this.dbService.query(SQL, [patientUUID]);
-    if (result.length === 0) {
-      throw new CustomException(
-        'Paciente não encontrado',
-        'NOT_FOUND',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-  }
-
   async deleteOne(patientUUID: string): Promise<void> {
     await this.isPatientRegistered(patientUUID);
 
@@ -205,10 +137,16 @@ export class PatientsService {
       );
   }
 
-  async find(queryBuilderDto: QueryBuilderDto) {
-    const SQL = `
+  async find(parameters: any) {
+    const where = [];
+    const queryParams = [];
+    const itemsPerPage = parameters.itemsPerPage || 10;
+    const pageNumber = parameters.page || 1;
+    const offset = (pageNumber - 1) * itemsPerPage;
+
+    let SQL = `
     SELECT 
-        p.id,
+        p.uuid,
         p.name,
         p.lastName,
         p.email,
@@ -224,28 +162,44 @@ export class PatientsService {
     INNER JOIN genders g ON p.genderId = g.id
     INNER JOIN professions prof ON p.professionId = prof.id
     INNER JOIN emergency_contact_relationships ecr ON p.emergencyContactRelationshipId = ecr.id
-  `;
-    return queryBuilderDto;
-    const tables: TableInfo[] = [
-      {
-        alias: 'p',
-        fields: [
-          'id',
-          'name',
-          'lastName',
-          'email',
-          'dateOfBirth',
-          'phone',
-          'emergencyContactName',
-          'emergencyContactPhone',
-          'active',
-        ],
-      },
-      { alias: 'g', fields: ['gender'] },
-      { alias: 'prof', fields: ['profession'] },
-      { alias: 'ecr', fields: ['emergencyContactRelationship'] },
-    ];
-    const finalSQL = queryBuilder(queryBuilderDto, SQL, tables);
-    return finalSQL;
+    WHERE 1=1
+    `;
+
+    if (parameters.uuid) {
+      where.push(`p.uuid = ?`);
+      queryParams.push(parameters.uuid);
+    }
+
+    if (parameters.name) {
+      where.push(`p.name LIKE ?`);
+      queryParams.push(`%${parameters.name}%`);
+    }
+
+    if (parameters.cpf) {
+      where.push(`p.cpf = ?`);
+      queryParams.push(parameters.cpf);
+    }
+
+    if (parameters.email) {
+      where.push(`p.email = ?`);
+      queryParams.push(parameters.email);
+    }
+
+    if (parameters.active && parameters.active === '0') {
+      where.push(`p.active = 0`);
+    }
+
+    if (where.length > 0) {
+      SQL += ' AND ' + where.join(' AND ');
+    }
+
+    if (parameters.sortField && parameters.sortDirection) {
+      SQL += ` ORDER BY ${parameters.sortField} ${parameters.sortDirection}`;
+    }
+
+    SQL += ` LIMIT ${offset}, ${itemsPerPage}`;
+
+    const result = await this.dbService.query(SQL, queryParams);
+    return result;
   }
 }
