@@ -17,7 +17,6 @@ import {
   ApiCreatedResponse,
   ApiOkResponse,
 } from 'src/common/decorators/api-responses.decorator';
-import { UUIDDto } from 'src/common/dtos/uuid.dto';
 import { ConflictExceptionFilter } from 'src/common/filters/conflict-exception.filter';
 import { CustomRequestValidatorPipe } from 'src/common/pipes/custom-request-validator.pipe';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
@@ -48,29 +47,27 @@ export class PatientsController {
   @ApiCommonResponses()
   @ApiOkResponse(FindPatientsResponseDto)
   @Get()
-  async find(@Query() requestParameters: FindPatientRequestDto) {
-    return this.patientsService.find(requestParameters);
+  async find(@Query() query: FindPatientRequestDto) {
+    return this.patientsService.find(query);
   }
 
   @UseGuards(JwtAuthGuard)
-  @UsePipes(new CustomRequestValidatorPipe(UUIDDto))
   @UsePipes(new CustomRequestValidatorPipe(UpdatePatientRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse()
   @Put(':uuid')
-  async updateOne(
-    @Param('uuid') uuid: UUIDDto,
+  async update(
+    @Param('uuid') uuid: string,
     @Body() body: UpdatePatientRequestDto,
   ) {
-    await this.patientsService.update(uuid.toString(), body);
+    await this.patientsService.update(uuid, body);
   }
 
   @UseGuards(JwtAuthGuard)
-  @UsePipes(new CustomRequestValidatorPipe(UUIDDto))
   @ApiCommonResponses()
   @ApiOkResponse()
   @Delete(':uuid')
-  async deleteOne(@Param('uuid') uuid: UUIDDto) {
-    await this.patientsService.delete(uuid.toString());
+  async deleteOne(@Param('uuid') uuid: string) {
+    await this.patientsService.delete(uuid);
   }
 }

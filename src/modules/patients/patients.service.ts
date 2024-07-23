@@ -1,9 +1,11 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { CustomException } from 'src/common/exceptions/custom.exception';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { formatISODateToYYYYMMDD } from 'src/common/functions/format-date';
 import { ValidationService } from 'src/common/services/validation/validation.service';
 import { DatabaseService } from 'src/database/database.service';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
+import { FindPatientRequestDto } from 'src/modules/patients/dto/find-patients-request.dto';
+import { FindPatientsResponseDto } from 'src/modules/patients/dto/find-patients-response.dto';
+import { UpdatePatientRequestDto } from 'src/modules/patients/dto/update-patient-request.dto';
 
 @Injectable()
 export class PatientsService {
@@ -13,32 +15,17 @@ export class PatientsService {
     @Inject('UUID') private uuidv4: () => string,
   ) {}
 
-  async isPatientRegistered(uuid: string): Promise<void> {
-    const SQL = `
-      SELECT id FROM patients WHERE id = ?;
-    `;
-
-    const result = await this.dbService.query(SQL, [uuid]);
-    if (result.length === 0) {
-      throw new CustomException(
-        'Paciente não encontrado',
-        'NOT_FOUND',
-        HttpStatus.NOT_FOUND,
-      );
-    }
-  }
-
-  async create(params: CreatePatientRequestDto): Promise<void> {
+  async create(body: CreatePatientRequestDto): Promise<void> {
     await this.validationService.checkForDuplicates('patients', {
-      cpf: params.cpf,
-      email: params.email,
+      cpf: body.cpf,
+      email: body.email,
     });
 
     const SQL = `
       INSERT INTO 
         patients
           (
-            id,
+            uuid,
             name, 
             lastname, 
             cpf, 
@@ -58,87 +45,25 @@ export class PatientsService {
 
     await this.dbService.query(SQL, [
       this.uuidv4(),
-      params.name,
-      params.lastName,
-      params.cpf,
-      params.email,
-      formatISODateToYYYYMMDD(params.dateOfBirth),
-      params.profession,
-      params.phone,
-      params.emergencyContactName,
-      params.emergencyContactPhone,
-      params.emergencyContactRelationship,
-      params.gender,
+      body.name,
+      body.lastName,
+      body.cpf,
+      body.email,
+      formatISODateToYYYYMMDD(body.dateOfBirth),
+      body.profession,
+      body.phone,
+      body.emergencyContactName,
+      body.emergencyContactPhone,
+      body.emergencyContactRelationship,
+      body.gender,
     ]);
   }
 
-  async update(uuid: string, params: CreatePatientRequestDto): Promise<void> {
-    await this.isPatientRegistered(uuid);
-
-    const SQL = `
-      UPDATE patients 
-      SET 
-        name = ?,
-        lastname = ?,
-        cpf = ?,
-        email = ?,
-        dateOfBirth = ?,
-        genderId = ?,
-        professionId = ?,
-        phone = ?,
-        emergencyContactName = ?,
-        emergencyContactPhone = ?,
-        emergencyContactRelationshipId = ?
-        active = ?
-      WHERE id = ?
-      LIMIT 1;
-    `;
-
-    const result = await this.dbService.query(SQL, [
-      params.name,
-      params.lastName,
-      params.cpf,
-      params.email,
-      params.dateOfBirth,
-      params.gender,
-      params.profession,
-      params.phone,
-      params.emergencyContactName,
-      params.emergencyContactPhone,
-      params.emergencyContactRelationship,
-      params.active,
-      uuid,
-    ]);
-
-    if (result.affectedRows === 0)
-      throw new CustomException(
-        'Paciente não alterado',
-        'NOT_FOUND',
-        HttpStatus.NOT_FOUND,
-      );
-  }
-
-  async delete(uuid: string): Promise<void> {
-    await this.isPatientRegistered(uuid);
-
-    const SQL = `
-      DELETE FROM patients WHERE id = ? LIMIT 1;
-    `;
-
-    const result = await this.dbService.query(SQL, [uuid]);
-    if (result.affectedRows === 0)
-      throw new CustomException(
-        'Paciente não excluído',
-        'NOT_FOUND',
-        HttpStatus.NOT_FOUND,
-      );
-  }
-
-  async find(parameters: any) {
+  async find(query: FindPatientRequestDto): Promise<FindPatientsResponseDto[]> {
     const where = [];
     const queryParams = [];
-    const itemsPerPage = parameters.itemsPerPage || 10;
-    const pageNumber = parameters.page || 1;
+    const itemsPerPage = Number(query.itemsPerPage) || 10;
+    const pageNumber = Number(query.page) || 1;
     const offset = (pageNumber - 1) * itemsPerPage;
 
     let SQL = `
@@ -162,27 +87,27 @@ export class PatientsService {
     WHERE 1=1
     `;
 
-    if (parameters.uuid) {
+    if (query.uuid) {
       where.push(`p.uuid = ?`);
-      queryParams.push(parameters.uuid);
+      queryParams.push(query.uuid);
     }
 
-    if (parameters.name) {
+    if (query.name) {
       where.push(`p.name LIKE ?`);
-      queryParams.push(`%${parameters.name}%`);
+      queryParams.push(`%${query.name}%`);
     }
 
-    if (parameters.cpf) {
+    if (query.cpf) {
       where.push(`p.cpf = ?`);
-      queryParams.push(parameters.cpf);
+      queryParams.push(query.cpf);
     }
 
-    if (parameters.email) {
+    if (query.email) {
       where.push(`p.email = ?`);
-      queryParams.push(parameters.email);
+      queryParams.push(query.email);
     }
 
-    if (parameters.active && parameters.active === '0') {
+    if (query.active && query.active === '0') {
       where.push(`p.active = 0`);
     }
 
@@ -190,13 +115,76 @@ export class PatientsService {
       SQL += ' AND ' + where.join(' AND ');
     }
 
-    if (parameters.sortField && parameters.sortDirection) {
-      SQL += ` ORDER BY ${parameters.sortField} ${parameters.sortDirection}`;
+    if (query.sortField && query.sortDirection) {
+      SQL += ` ORDER BY ${query.sortField} ${query.sortDirection}`;
+    } else {
+      SQL += ' ORDER BY CreatedAt DESC';
     }
 
     SQL += ` LIMIT ${offset}, ${itemsPerPage}`;
 
-    const result = await this.dbService.query(SQL, queryParams);
-    return result;
+    return await this.dbService.query(SQL, queryParams);
+  }
+
+  async update(uuid: string, body: UpdatePatientRequestDto): Promise<void> {
+    await this.isPatientRegistered(uuid);
+
+    const SQL = `
+      UPDATE patients
+      SET 
+        name = ?,
+        lastname = ?,
+        cpf = ?,
+        email = ?,
+        dateOfBirth = ?,
+        genderId = ?,
+        professionId = ?,
+        phone = ?,
+        emergencyContactName = ?,
+        emergencyContactPhone = ?,
+        emergencyContactRelationshipId = ?,
+        active = ?
+      WHERE uuid = ?
+      LIMIT 1;
+    `;
+
+    const result = await this.dbService.query(SQL, [
+      body.name,
+      body.lastName,
+      body.cpf,
+      body.email,
+      body.dateOfBirth,
+      body.gender,
+      body.profession,
+      body.phone,
+      body.emergencyContactName,
+      body.emergencyContactPhone,
+      body.emergencyContactRelationship,
+      body.active,
+      uuid,
+    ]);
+
+    if (result.affectedRows === 0) throw new NotFoundException();
+  }
+
+  async delete(uuid: string): Promise<void> {
+    await this.isPatientRegistered(uuid);
+
+    const SQL = `
+      DELETE FROM patients WHERE uuid = ? LIMIT 1;
+    `;
+
+    const result = await this.dbService.query(SQL, [uuid]);
+    if (result.affectedRows === 0) throw new NotFoundException();
+  }
+
+  async isPatientRegistered(uuid: string): Promise<void> {
+    const result = await this.dbService.query(
+      'SELECT uuid FROM patients WHERE uuid = ?;',
+      [uuid],
+    );
+    if (result.length === 0) throw new NotFoundException();
   }
 }
+
+//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjJlN2NkMmYzLTJlOTUtMTFlZi1hOTVjLTAyNDJhYzEyMDAwMiIsImlhdCI6MTcyMTc1OTc0NiwiZXhwIjoxNzIxODQ2MTQ2fQ.l1zf08k-Nhf6sJ2splcMPZVwpTXdrHnAvw8wd9gVStQ
