@@ -19,7 +19,9 @@ export class ValidationService {
     const existingEntities = await this.databaseService.query(sql, values);
 
     const duplicatedFields = Object.keys(fields).filter((key) =>
-      existingEntities.some((entity) => entity[key] === fields[key]),
+      existingEntities.some(
+        (entity: { [x: string]: any }) => entity[key] === fields[key],
+      ),
     );
 
     if (duplicatedFields.length > 0) {

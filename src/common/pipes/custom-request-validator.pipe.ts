@@ -5,7 +5,7 @@ import {
   PipeTransform,
 } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
-import { ValidationError, validate } from 'class-validator';
+import { ValidationError, validate, validateSync } from 'class-validator';
 
 @Injectable()
 export class CustomRequestValidatorPipe<T extends object>
@@ -18,14 +18,13 @@ export class CustomRequestValidatorPipe<T extends object>
       throw new Error('DTO is required');
     }
 
-    const dtoInstance = plainToClass(this.dto, value);
+    const dtoInstance = await plainToClass(this.dto, value);
     const errors = await validate(dtoInstance);
 
     if (errors.length > 0) {
       const schemaErrors = this.formatSchemaErrors(errors);
       throw new BadRequestException({
         statusCode: 400,
-        error: 'Bad Request',
         message: 'Validation failed',
         details: {
           schemaErrors,

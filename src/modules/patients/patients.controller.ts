@@ -55,12 +55,9 @@ export class PatientsController {
   @UsePipes(new CustomRequestValidatorPipe(UpdatePatientRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse()
-  @Put(':uuid')
-  async update(
-    @Param('uuid') uuid: string,
-    @Body() body: UpdatePatientRequestDto,
-  ) {
-    await this.patientsService.update(uuid, body);
+  @Put()
+  async update(@Body() body: UpdatePatientRequestDto) {
+    await this.patientsService.update(body);
   }
 
   @UseGuards(JwtAuthGuard)

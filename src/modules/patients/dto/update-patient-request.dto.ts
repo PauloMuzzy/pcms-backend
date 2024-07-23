@@ -2,12 +2,18 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDateString,
   IsEmail,
-  IsNumberString,
+  IsNumber,
   IsOptional,
   IsString,
   Length,
 } from 'class-validator';
 export class UpdatePatientRequestDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  @Length(1, 100)
+  uuid?: string;
+
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
@@ -22,7 +28,7 @@ export class UpdatePatientRequestDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumberString()
+  @IsString()
   @Length(11, 11)
   cpf?: string;
 
@@ -38,17 +44,17 @@ export class UpdatePatientRequestDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumberString()
-  gender?: string;
+  @IsNumber()
+  gender?: number;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumberString()
-  profession?: string;
+  @IsNumber()
+  profession?: number;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumberString()
+  @IsString()
   @Length(11, 11)
   phone?: string;
 
@@ -60,17 +66,17 @@ export class UpdatePatientRequestDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumberString()
+  @IsString()
   @Length(11, 11)
   emergencyContactPhone?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumberString()
-  emergencyContactRelationship?: string;
+  @IsNumber()
+  emergencyContactRelationship?: number;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumberString()
-  active?: string;
+  @IsNumber()
+  active?: number;
 }

@@ -3,6 +3,7 @@ import {
   IsDateString,
   IsEmail,
   IsNotEmpty,
+  IsNumber,
   IsNumberString,
   IsString,
   Length,
@@ -23,7 +24,7 @@ export class CreatePatientRequestDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumberString()
+  @IsString()
   @Length(11, 11)
   cpf: string;
 
@@ -39,13 +40,13 @@ export class CreatePatientRequestDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumberString()
-  gender: string;
+  @IsNumber()
+  gender: number;
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumberString()
-  profession: string;
+  @IsNumber()
+  profession: number;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -67,11 +68,11 @@ export class CreatePatientRequestDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumberString()
-  emergencyContactRelationship: string;
+  @IsNumber()
+  emergencyContactRelationship: number;
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsNumberString()
-  active: string;
+  @IsNumber()
+  active: number;
 }

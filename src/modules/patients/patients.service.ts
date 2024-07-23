@@ -107,7 +107,7 @@ export class PatientsService {
       queryParams.push(query.email);
     }
 
-    if (query.active && query.active === '0') {
+    if (query.active && query.active === 0) {
       where.push(`p.active = 0`);
     }
 
@@ -126,8 +126,13 @@ export class PatientsService {
     return await this.dbService.query(SQL, queryParams);
   }
 
-  async update(uuid: string, body: UpdatePatientRequestDto): Promise<void> {
-    await this.isPatientRegistered(uuid);
+  async update(body: UpdatePatientRequestDto): Promise<void> {
+    await this.isPatientRegistered(body.uuid);
+
+    await this.validationService.checkForDuplicates('patients', {
+      cpf: body.cpf,
+      email: body.email,
+    });
 
     const SQL = `
       UPDATE patients
@@ -161,7 +166,7 @@ export class PatientsService {
       body.emergencyContactPhone,
       body.emergencyContactRelationship,
       body.active,
-      uuid,
+      body.uuid,
     ]);
 
     if (result.affectedRows === 0) throw new NotFoundException();
@@ -186,5 +191,3 @@ export class PatientsService {
     if (result.length === 0) throw new NotFoundException();
   }
 }
-
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjJlN2NkMmYzLTJlOTUtMTFlZi1hOTVjLTAyNDJhYzEyMDAwMiIsImlhdCI6MTcyMTc1OTc0NiwiZXhwIjoxNzIxODQ2MTQ2fQ.l1zf08k-Nhf6sJ2splcMPZVwpTXdrHnAvw8wd9gVStQ
