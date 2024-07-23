@@ -11,67 +11,66 @@ import {
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   ApiCommonResponses,
   ApiCreatedResponse,
   ApiOkResponse,
 } from 'src/common/decorators/api-responses.decorator';
+import { UUIDDto } from 'src/common/dtos/uuid.dto';
 import { ConflictExceptionFilter } from 'src/common/filters/conflict-exception.filter';
 import { CustomRequestValidatorPipe } from 'src/common/pipes/custom-request-validator.pipe';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
-import { Public } from 'src/modules/auth/public.decorator';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
-import { FindAllPatientsResponseDto } from 'src/modules/patients/dto/find-all-patients-response.dto';
 import { FindPatientRequestDto } from 'src/modules/patients/dto/find-patients-request.dto';
-import { UpdateOnePatientRequestDto } from 'src/modules/patients/dto/update-one-patient-request.dto';
+import { FindPatientsResponseDto } from 'src/modules/patients/dto/find-patients-response.dto';
+import { UpdatePatientRequestDto } from 'src/modules/patients/dto/update-patient-request.dto';
 import { PatientsService } from 'src/modules/patients/patients.service';
 
 @ApiTags('Patients')
-@Controller('patients')
 @ApiBearerAuth()
+@Controller('patients')
 export class PatientsController {
-  constructor(private patientsService: PatientsService) {}
+  constructor(private readonly patientsService: PatientsService) {}
 
   @UseGuards(JwtAuthGuard)
-  @Post('create')
   @UseFilters(ConflictExceptionFilter)
+  @UsePipes(new CustomRequestValidatorPipe(CreatePatientRequestDto))
   @ApiCommonResponses()
   @ApiCreatedResponse()
+  @Post()
   async create(@Body() body: CreatePatientRequestDto) {
     await this.patientsService.create(body);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Put(':patientUUID')
+  @UsePipes(new CustomRequestValidatorPipe(FindPatientRequestDto))
   @ApiCommonResponses()
-  @ApiOkResponse()
-  async updateOne(
-    @Body() body: UpdateOnePatientRequestDto,
-    @Param('patientUUID') patientUUID: string,
-  ) {
-    await this.patientsService.updateOne(patientUUID, body);
+  @ApiOkResponse(FindPatientsResponseDto)
+  @Get()
+  async find(@Query() requestParameters: FindPatientRequestDto) {
+    return this.patientsService.find(requestParameters);
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete(':patientUUID')
+  @UsePipes(new CustomRequestValidatorPipe(UUIDDto))
+  @UsePipes(new CustomRequestValidatorPipe(UpdatePatientRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse()
-  async deleteOne(@Param('patientUUID') patientUUID: string) {
-    await this.patientsService.deleteOne(patientUUID);
+  @Put(':uuid')
+  async updateOne(
+    @Param('uuid') uuid: UUIDDto,
+    @Body() body: UpdatePatientRequestDto,
+  ) {
+    await this.patientsService.update(uuid.toString(), body);
   }
 
-  //@UseGuards(JwtAuthGuard)
-  @Public()
-  @UsePipes(new CustomRequestValidatorPipe(FindPatientRequestDto))
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new CustomRequestValidatorPipe(UUIDDto))
   @ApiCommonResponses()
-  @ApiResponse({
-    status: 200,
-    description: 'Successful operation.',
-    type: [FindAllPatientsResponseDto],
-  })
-  @Get()
-  async find(@Query() requestParameters: FindPatientRequestDto) {
-    return await this.patientsService.find(requestParameters);
+  @ApiOkResponse()
+  @Delete(':uuid')
+  async deleteOne(@Param('uuid') uuid: UUIDDto) {
+    await this.patientsService.delete(uuid.toString());
   }
 }

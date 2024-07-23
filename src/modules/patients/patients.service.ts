@@ -13,12 +13,12 @@ export class PatientsService {
     @Inject('UUID') private uuidv4: () => string,
   ) {}
 
-  async isPatientRegistered(patientUUID: string): Promise<void> {
+  async isPatientRegistered(uuid: string): Promise<void> {
     const SQL = `
       SELECT id FROM patients WHERE id = ?;
     `;
 
-    const result = await this.dbService.query(SQL, [patientUUID]);
+    const result = await this.dbService.query(SQL, [uuid]);
     if (result.length === 0) {
       throw new CustomException(
         'Paciente não encontrado',
@@ -72,11 +72,8 @@ export class PatientsService {
     ]);
   }
 
-  async updateOne(
-    patientUUID: string,
-    params: CreatePatientRequestDto,
-  ): Promise<void> {
-    await this.isPatientRegistered(patientUUID);
+  async update(uuid: string, params: CreatePatientRequestDto): Promise<void> {
+    await this.isPatientRegistered(uuid);
 
     const SQL = `
       UPDATE patients 
@@ -110,7 +107,7 @@ export class PatientsService {
       params.emergencyContactPhone,
       params.emergencyContactRelationship,
       params.active,
-      patientUUID,
+      uuid,
     ]);
 
     if (result.affectedRows === 0)
@@ -121,14 +118,14 @@ export class PatientsService {
       );
   }
 
-  async deleteOne(patientUUID: string): Promise<void> {
-    await this.isPatientRegistered(patientUUID);
+  async delete(uuid: string): Promise<void> {
+    await this.isPatientRegistered(uuid);
 
     const SQL = `
       DELETE FROM patients WHERE id = ? LIMIT 1;
     `;
 
-    const result = await this.dbService.query(SQL, [patientUUID]);
+    const result = await this.dbService.query(SQL, [uuid]);
     if (result.affectedRows === 0)
       throw new CustomException(
         'Paciente não excluído',

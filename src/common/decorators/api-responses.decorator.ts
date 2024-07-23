@@ -1,4 +1,4 @@
-import { applyDecorators } from '@nestjs/common';
+import { applyDecorators, Type } from '@nestjs/common';
 import { ApiResponse } from '@nestjs/swagger';
 
 export function ApiCommonResponses() {
@@ -11,8 +11,12 @@ export function ApiCommonResponses() {
   );
 }
 
-export function ApiOkResponse() {
-  return ApiResponse({ status: 200, description: 'Ok' });
+export function ApiOkResponse<TModel extends Type<any>>(model?: TModel) {
+  return ApiResponse({
+    status: 200,
+    description: 'Successful operation.',
+    type: model,
+  });
 }
 
 export function ApiCreatedResponse() {

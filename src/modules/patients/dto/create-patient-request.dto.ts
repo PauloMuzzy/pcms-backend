@@ -3,6 +3,7 @@ import {
   IsDateString,
   IsEmail,
   IsNotEmpty,
+  IsNumberString,
   IsString,
   Length,
 } from 'class-validator';
@@ -11,18 +12,18 @@ export class CreatePatientRequestDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  @Length(1, 500)
+  @Length(1, 100)
   name: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  @Length(1, 500)
+  @Length(1, 100)
   lastName: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsString()
+  @IsNumberString()
   @Length(11, 11)
   cpf: string;
 
@@ -38,36 +39,39 @@ export class CreatePatientRequestDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsString()
+  @IsNumberString()
   gender: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsString()
+  @IsNumberString()
   profession: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsString()
+  @IsNumberString()
+  @Length(11, 11)
   phone: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
+  @Length(1, 100)
   emergencyContactName: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsString()
+  @IsNumberString()
+  @Length(11, 11)
   emergencyContactPhone: string;
 
-  @ApiProperty({ example: 1 })
+  @ApiProperty()
   @IsNotEmpty()
-  @IsString()
+  @IsNumberString()
   emergencyContactRelationship: string;
 
-  @ApiProperty({ example: 1 })
+  @ApiProperty()
   @IsNotEmpty()
-  @IsString()
+  @IsNumberString()
   active: string;
 }

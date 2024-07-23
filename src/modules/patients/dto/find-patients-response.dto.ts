@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class FindAllPatientsResponseDto {
+export class FindPatientsResponseDto {
   @ApiProperty()
-  id: number;
+  uuid: string;
 
   @ApiProperty()
   name: string;
@@ -17,7 +17,7 @@ export class FindAllPatientsResponseDto {
   dateOfBirth: Date;
 
   @ApiProperty()
-  gender: number;
+  gender: string;
 
   @ApiProperty()
   profession: string;
@@ -35,5 +35,5 @@ export class FindAllPatientsResponseDto {
   emergencyContactRelationship: string;
 
   @ApiProperty()
-  active: number;
+  active: string;
 }
