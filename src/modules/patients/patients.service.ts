@@ -1,6 +1,7 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { formatISODateToYYYYMMDD } from 'src/common/functions/format-date';
-import { ValidationService } from 'src/common/services/validation/validation.service';
+import { DuplicateDetectorService } from 'src/common/modules/duplicate-detector/duplicate-detector.service';
+import { UuidService } from 'src/common/modules/uuid/uuid.service';
 import { DatabaseService } from 'src/database/database.service';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
 import { FindPatientRequestDto } from 'src/modules/patients/dto/find-patients-request.dto';
@@ -10,13 +11,13 @@ import { UpdatePatientRequestDto } from 'src/modules/patients/dto/update-patient
 @Injectable()
 export class PatientsService {
   constructor(
-    private readonly validationService: ValidationService,
+    private readonly duplicateDetectorService: DuplicateDetectorService,
     private readonly dbService: DatabaseService,
-    @Inject('UUID') private uuidv4: () => string,
+    private readonly uuidService: UuidService,
   ) {}
 
   async create(body: CreatePatientRequestDto): Promise<void> {
-    await this.validationService.checkForDuplicates('patients', {
+    await this.duplicateDetectorService.checkForDuplicates('patients', {
       cpf: body.cpf,
       email: body.email,
     });
@@ -44,7 +45,7 @@ export class PatientsService {
           )`;
 
     await this.dbService.query(SQL, [
-      this.uuidv4(),
+      this.uuidService.generate(),
       body.name,
       body.lastName,
       body.cpf,
@@ -129,7 +130,7 @@ export class PatientsService {
   async update(body: UpdatePatientRequestDto): Promise<void> {
     await this.isPatientRegistered(body.uuid);
 
-    await this.validationService.checkForDuplicates('patients', {
+    await this.duplicateDetectorService.checkForDuplicates('patients', {
       cpf: body.cpf,
       email: body.email,
     });

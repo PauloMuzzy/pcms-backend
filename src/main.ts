@@ -2,13 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { config } from 'dotenv';
 import { GlobalExceptionFilter } from 'src/common/filters/global-exception.filter';
-import { Logger } from 'src/common/modules/logger/logger.service';
+import { LoggerService } from 'src/common/modules/logger/logger.service';
 import { AppModule } from './app.module';
 config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const logger = app.get(Logger);
+  const logger = app.get(LoggerService);
   app.useGlobalFilters(new GlobalExceptionFilter(logger));
   app.enableCors({ origin: 'http://localhost:3000' });
   const config = new DocumentBuilder()

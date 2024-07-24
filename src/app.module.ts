@@ -1,7 +1,8 @@
 import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
+import { DuplicateDetectorModule } from 'src/common/modules/duplicate-detector/duplicate-detector.module';
 import { LoggerModule } from 'src/common/modules/logger/logger.module';
-import { ValidationService } from 'src/common/services/validation/validation.service';
+import { UuidModule } from 'src/common/modules/uuid/uuid.module';
 import { mailerConfig } from 'src/config/mailer/mailer.config';
 import { DatabaseModule } from 'src/database/database.module';
 import { AditionalInformationsModule } from 'src/modules/aditional-informations/aditional-informations.module';
@@ -25,9 +26,11 @@ require('dotenv').config();
     SessionReportsModule,
     AditionalInformationsModule,
     OptionsModule,
+    DuplicateDetectorModule,
+    UuidModule,
     LoggerModule,
   ],
   controllers: [SessionReportsController],
-  providers: [SessionReportsService, ValidationService],
+  providers: [SessionReportsService],
 })
 export class AppModule {}

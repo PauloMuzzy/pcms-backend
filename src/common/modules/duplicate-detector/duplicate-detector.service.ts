@@ -3,7 +3,7 @@ import { ConflictException } from 'src/common/exceptions/conflict.exception';
 import { DatabaseService } from 'src/database/database.service';
 
 @Injectable()
-export class ValidationService {
+export class DuplicateDetectorService {
   constructor(private readonly databaseService: DatabaseService) {}
 
   async checkForDuplicates(
