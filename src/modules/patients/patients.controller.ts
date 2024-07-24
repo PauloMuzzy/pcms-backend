@@ -21,6 +21,7 @@ import { ConflictExceptionFilter } from 'src/common/filters/conflict-exception.f
 import { CustomRequestValidatorPipe } from 'src/common/pipes/custom-request-validator.pipe';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
+import { DeletePatientRequestDto } from 'src/modules/patients/dto/delete-patient-request.dto';
 import { FindPatientRequestDto } from 'src/modules/patients/dto/find-patients-request.dto';
 import { FindPatientsResponseDto } from 'src/modules/patients/dto/find-patients-response.dto';
 import { UpdatePatientRequestDto } from 'src/modules/patients/dto/update-patient-request.dto';
@@ -61,10 +62,11 @@ export class PatientsController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @UsePipes(new CustomRequestValidatorPipe(DeletePatientRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse()
   @Delete(':uuid')
-  async deleteOne(@Param('uuid') uuid: string) {
-    await this.patientsService.delete(uuid);
+  async deleteOne(@Param('uuid') param: DeletePatientRequestDto) {
+    await this.patientsService.delete(param.uuid);
   }
 }

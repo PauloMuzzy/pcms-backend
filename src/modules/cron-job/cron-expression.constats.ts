@@ -1,0 +1,12 @@
+export const EVERY_MINUTE = '* * * * *';
+export const EVERY_5_MINUTES = '*/5 * * * *';
+export const EVERY_10_MINUTES = '*/10 * * * *';
+export const EVERY_15_MINUTES = '*/15 * * * *';
+export const EVERY_HOUR = '0 * * * *';
+export const DAILY_AT_MIDNIGHT = '0 0 * * *';
+export const DAILY_AT_1AM = '0 1 * * *';
+export const WEEKLY_AT_MIDNIGHT_SUNDAY = '0 0 * * 0';
+export const MONTHLY_AT_MIDNIGHT_FIRST_DAY = '0 0 1 * *';
+export const MONTHLY_AT_1AM_FIRST_DAY = '0 1 1 * *';
+export const FIRST_WEEKDAY_OF_MONTH_AT_MIDNIGHT = '0 0 1-7 * 1-5';
+export const EVERY_WEEKDAY_AT_5PM = '0 17 * * 1-5';

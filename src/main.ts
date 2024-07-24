@@ -20,6 +20,7 @@ async function bootstrap() {
     .addTag('Patients')
     .addTag('Auth')
     .addTag('Options')
+    .addTag('Cron-Jobs')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
