@@ -4,8 +4,8 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
-  Put,
   Query,
   UseFilters,
   UseGuards,
@@ -38,7 +38,7 @@ export class PatientsController {
   @UsePipes(new CustomRequestValidatorPipe(CreatePatientRequestDto))
   @ApiCommonResponses()
   @ApiCreatedResponse()
-  @Post('create')
+  @Post()
   async create(@Body() body: CreatePatientRequestDto) {
     await this.patientsService.create(body);
   }
@@ -47,7 +47,7 @@ export class PatientsController {
   @UsePipes(new CustomRequestValidatorPipe(FindPatientRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse(FindPatientsResponseDto)
-  @Get('find')
+  @Get()
   async find(@Query() query: FindPatientRequestDto) {
     return this.patientsService.find(query);
   }
@@ -56,17 +56,17 @@ export class PatientsController {
   @UsePipes(new CustomRequestValidatorPipe(UpdatePatientRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse()
-  @Put('update')
-  async update(@Body() body: UpdatePatientRequestDto) {
-    await this.patientsService.update(body);
+  @Patch()
+  async edit(@Body() body: UpdatePatientRequestDto) {
+    await this.patientsService.edit(body);
   }
 
   @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(DeletePatientRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse()
-  @Delete('delete')
-  async delete(@Query() query: DeletePatientRequestDto) {
-    await this.patientsService.delete(query);
+  @Delete(':uuid')
+  async delete(@Param() params: DeletePatientRequestDto) {
+    await this.patientsService.remove(params);
   }
 }

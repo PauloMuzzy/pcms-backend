@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsIn,
-  IsNumber,
   IsNumberString,
   IsOptional,
   IsString,
@@ -19,7 +18,7 @@ export class FindPatientRequestDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  @Length(1, 500)
+  @Length(1, 100)
   name?: string;
 
   @ApiProperty({ required: false })
@@ -35,9 +34,9 @@ export class FindPatientRequestDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsIn([0, 1])
-  @IsNumber()
-  active?: number;
+  @IsIn(['0', '1'])
+  @IsNumberString()
+  active?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -53,12 +52,12 @@ export class FindPatientRequestDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumber()
-  page?: number;
+  @IsNumberString()
+  page?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumber()
-  @IsIn([10, 20, 50])
-  itemsPerPage?: number;
+  @IsNumberString()
+  @IsIn(['10', '20', '50'])
+  itemsPerPage?: string;
 }

@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsDateString,
   IsEmail,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
@@ -10,6 +11,7 @@ import {
 export class UpdatePatientRequestDto {
   @ApiProperty()
   @IsString()
+  @IsNotEmpty()
   @Length(1, 100)
   uuid: string;
 

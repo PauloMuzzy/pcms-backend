@@ -6,6 +6,7 @@ import { UniqueRegisterCheckerModule } from 'src/common/modules/unique-register-
 import { UuidModule } from 'src/common/modules/uuid/uuid.module';
 import { UsersController } from 'src/modules/users/users.controller';
 import { UsersService } from './users.service';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { UsersService } from './users.service';
     UuidModule,
     UniqueFieldCheckerModule,
     UniqueRegisterCheckerModule,
+    MailerModule,
   ],
   providers: [UsersService],
   controllers: [UsersController],

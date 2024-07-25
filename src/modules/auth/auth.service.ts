@@ -32,12 +32,11 @@ export class AuthService {
           { id: user.uuid },
           {
             secret: process.env.SECRET_KEY_JWT,
-            expiresIn: '1d',
+            expiresIn: '30d',
           },
         ),
       };
     }
-
     throw new UnauthorizedException('Usuário ou Senha Inválidos');
   }
 }

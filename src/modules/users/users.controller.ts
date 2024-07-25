@@ -3,8 +3,9 @@ import {
   Controller,
   Delete,
   Get,
+  Param,
+  Patch,
   Post,
-  Put,
   Query,
   UseFilters,
   UsePipes,
@@ -36,7 +37,7 @@ export class UsersController {
   @UsePipes(new CustomRequestValidatorPipe(CreateUserRequestDto))
   @ApiCommonResponses()
   @ApiCreatedResponse()
-  @Post('create')
+  @Post()
   async create(@Body() body: CreateUserRequestDto) {
     await this.usersService.create(body);
   }
@@ -44,7 +45,7 @@ export class UsersController {
   @Public()
   @UsePipes(new CustomRequestValidatorPipe(FindUsersRequestDto))
   @ApiCommonResponses()
-  @Get('find')
+  @Get()
   async find(@Query() query: FindUsersRequestDto) {
     return this.usersService.find(query);
   }
@@ -53,17 +54,17 @@ export class UsersController {
   @UsePipes(new CustomRequestValidatorPipe(UpdateUserRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse()
-  @Put('update')
-  async update(@Body() body: UpdateUserRequestDto) {
-    await this.usersService.update(body);
+  @Patch()
+  async edit(@Body() body: UpdateUserRequestDto) {
+    await this.usersService.edit(body);
   }
 
   @Public()
   @UsePipes(new CustomRequestValidatorPipe(DeleteUserRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse()
-  @Delete('delete')
-  async delete(@Query() query: DeleteUserRequestDto) {
-    await this.usersService.delete(query);
+  @Delete(':uuid')
+  async remove(@Param() params: DeleteUserRequestDto) {
+    await this.usersService.remove(params);
   }
 }

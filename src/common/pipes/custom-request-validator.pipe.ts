@@ -1,52 +1,3 @@
-// import {
-//   ArgumentMetadata,
-//   BadRequestException,
-//   Injectable,
-//   PipeTransform,
-// } from '@nestjs/common';
-// import { plainToClass } from 'class-transformer';
-// import { ValidationError, validate } from 'class-validator';
-
-// @Injectable()
-// export class CustomRequestValidatorPipe<T extends object>
-//   implements PipeTransform<any, Promise<T>>
-// {
-//   constructor(private readonly dto: new (...args: any[]) => T) {}
-
-//   async transform(value: any, metadata: ArgumentMetadata): Promise<T> {
-//     if (!this.dto) {
-//       throw new Error('DTO is required');
-//     }
-
-//     const dtoInstance = await plainToClass(this.dto, value);
-//     const errors = await validate(dtoInstance);
-
-//     if (errors.length > 0) {
-//       const schemaErrors = this.formatSchemaErrors(errors);
-//       throw new BadRequestException({
-//         statusCode: 400,
-//         message: 'Validation failed',
-//         details: {
-//           schemaErrors,
-//         },
-//       });
-//     }
-
-//     return dtoInstance;
-//   }
-
-//   private formatSchemaErrors(errors: ValidationError[]) {
-//     return errors.flatMap((err) => {
-//       if (err.children && err.children.length > 0) {
-//         return this.formatSchemaErrors(err.children);
-//       }
-//       return {
-//         field: err.property,
-//         message: Object.values(err.constraints || {}).join(', '),
-//       };
-//     });
-//   }
-// }
 import {
   ArgumentMetadata,
   BadRequestException,
@@ -55,7 +6,6 @@ import {
 } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { ValidationError, validate } from 'class-validator';
-import { isUUID } from 'validator';
 
 @Injectable()
 export class CustomRequestValidatorPipe<T extends object>
@@ -64,26 +14,6 @@ export class CustomRequestValidatorPipe<T extends object>
   constructor(private readonly dto?: new (...args: any[]) => T) {}
 
   async transform(value: any, metadata: ArgumentMetadata): Promise<T | any> {
-    if (metadata.type === 'param') {
-      if (typeof value === 'string') {
-        if (!isUUID(value, 4)) {
-          throw new BadRequestException({
-            statusCode: 400,
-            message: 'Validation failed',
-            details: {
-              schemaErrors: [
-                {
-                  field: metadata.data || 'param',
-                  message: 'Invalid UUID format',
-                },
-              ],
-            },
-          });
-        }
-        return value;
-      }
-    }
-
     if (this.dto) {
       const dtoInstance = plainToClass(this.dto, value);
       const errors = await validate(dtoInstance);

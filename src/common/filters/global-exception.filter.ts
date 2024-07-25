@@ -39,7 +39,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const errorFileMatch = /at (.+?) \((.+):(\d+):(\d+)\)/.exec(errorFileLine);
     const errorFile = errorFileMatch ? errorFileMatch[2] : 'Unknown';
     const errorLine = errorFileMatch ? errorFileMatch[3] : 'Unknown';
-
     const ip = request.ip || request.headers['x-forwarded-for'] || 'Unknown';
     const userAgent = request.headers['user-agent'] || 'Unknown';
     const errorMessage =
@@ -58,10 +57,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     response.status(status).json({
       statusCode: status,
-      error: isHttpException ? 'Http Error' : 'Internal Server Error',
-      message: isHttpException
-        ? message
-        : 'An internal server error has occurred, contact support to verify the issue',
+      error: 'Internal Server Error',
+      message:
+        'An internal server error has occurred, contact support to verify the issue',
     });
   }
 }

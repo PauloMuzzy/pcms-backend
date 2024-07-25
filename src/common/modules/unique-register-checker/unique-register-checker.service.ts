@@ -12,7 +12,7 @@ export class UniqueRegisterCheckerService {
     const result = await this.databaseService.query(sql, values);
 
     if (result.length === 0) {
-      throw new NotFoundException();
+      throw new NotFoundException('UUID not found');
     }
   }
 }

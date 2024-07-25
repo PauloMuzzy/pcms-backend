@@ -1,3 +1,4 @@
+import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { DatabaseService } from 'src/common/modules/database/database.service';
@@ -17,6 +18,7 @@ export class UsersService {
     private readonly uniqueRegisterCheckerService: UniqueRegisterCheckerService,
     private readonly databaseService: DatabaseService,
     private readonly uuidService: UuidService,
+    private readonly mailerService: MailerService,
   ) {}
 
   private saltRounds = 10;
@@ -38,27 +40,19 @@ export class UsersService {
     return hashedPassword;
   }
 
-  // async sendEmail(mailOptions: {
-  //   to: string;
-  //   subject: string;
-  //   text: string;
-  //   html: string;
-  // }) {
-  //   await this.mailerService.sendMail({
-  //     to: mailOptions.to,
-  //     from: 'noreply@nestjs.com',
-  //     subject: mailOptions.subject,
-  //     text: mailOptions.text,
-  //     html: mailOptions.html,
-  //   });
-  // }
-
-  async isUserRegistered(uuid: string): Promise<void> {
-    const result = await this.databaseService.query(
-      'SELECT uuid FROM users WHERE uuid = ?;',
-      [uuid],
-    );
-    if (result.length === 0) throw new NotFoundException();
+  async sendEmail(mailOptions: {
+    to: string;
+    subject: string;
+    text: string;
+    html: string;
+  }) {
+    await this.mailerService.sendMail({
+      to: mailOptions.to,
+      from: 'no-reply@pcms.com',
+      subject: mailOptions.subject,
+      text: mailOptions.text,
+      html: mailOptions.html,
+    });
   }
 
   async findCredentials(email: string): Promise<any> {
@@ -79,24 +73,26 @@ export class UsersService {
     const password = this.generatePassword();
     const hashedPassword = await this.generateHashPassword(password);
     const uuid = await this.uuidService.generate();
-
-    await this.uniqueFieldCheckerService.check('users', {
-      cpf: body.cpf,
-      email: body.email,
+    await this.uniqueFieldCheckerService.check({
+      tableName: 'users',
+      fields: {
+        cpf: body.cpf,
+        email: body.email,
+      },
     });
 
-    // if (true) {
-    //   try {
-    //     await this.sendEmail({
-    //       to: 'paulokriger@gmail.com',
-    //       subject: 'Cadastro Realizado com Sucesso',
-    //       text: `Olá ${`Paulo`}! Seu cadastro foi realizado com sucesso! Sua senha é: ${password}`,
-    //       html: `<p>Olá ${`Paulo`}! Seu cadastro foi realizado com sucesso! Sua senha é: <strong>${password}</strong></p>`,
-    //     });
-    //   } catch (error) {
-    //     console.error('Erro ao enviar e-mail:', error);
-    //   }
-    // }
+    if (true) {
+      try {
+        await this.sendEmail({
+          to: 'paulokriger@gmail.com',
+          subject: 'Cadastro Realizado com Sucesso',
+          text: `Olá ${`Paulo`}! Seu cadastro foi realizado com sucesso! Sua senha é: ${password}`,
+          html: `<p>Olá ${`Paulo`}! Seu cadastro foi realizado com sucesso! Sua senha é: <strong>${password}</strong></p>`,
+        });
+      } catch (error) {
+        console.error('Erro ao enviar e-mail:', error);
+      }
+    }
 
     const SQL = `
       INSERT INTO 
@@ -133,7 +129,8 @@ export class UsersService {
       accessTypeId,
       dateOfBirth,
       createdAt,
-      updatedAt
+      updatedAt,
+      active
     FROM 
       users
     WHERE 1=1
@@ -183,13 +180,16 @@ export class UsersService {
     return await this.databaseService.query(SQL, queryParams);
   }
 
-  async update(body: UpdateUserRequestDto): Promise<void> {
+  async edit(body: UpdateUserRequestDto): Promise<void> {
     await this.uniqueRegisterCheckerService.check('users', body.uuid);
-    await this.uniqueFieldCheckerService.check('users', {
-      cpf: body.cpf,
-      email: body.email,
+    await this.uniqueFieldCheckerService.check({
+      tableName: 'users',
+      fields: {
+        cpf: body.cpf,
+        email: body.email,
+      },
+      uuid: body.uuid,
     });
-
     const SQL = `
       UPDATE 
         users
@@ -204,7 +204,7 @@ export class UsersService {
       WHERE 
         uuid = ?`;
 
-    return await this.databaseService.query(SQL, [
+    const result = await this.databaseService.query(SQL, [
       body.name,
       body.lastName,
       body.email,
@@ -214,9 +214,12 @@ export class UsersService {
       body.active,
       body.uuid,
     ]);
+
+    if (result.changedRows === 0)
+      throw new NotFoundException('User not changed');
   }
 
-  async delete(query: DeleteUserRequestDto): Promise<void> {
+  async remove(query: DeleteUserRequestDto): Promise<void> {
     await this.uniqueRegisterCheckerService.check('users', query.uuid);
     const SQL = `
       DELETE FROM 

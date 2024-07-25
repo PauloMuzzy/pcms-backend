@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsUUID } from 'class-validator';
 
 export class DeletePatientRequestDto {
   @ApiProperty()
-  @IsOptional()
-  @IsString()
+  @IsUUID('4')
+  @IsNotEmpty()
   uuid: string;
 }

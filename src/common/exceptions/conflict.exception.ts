@@ -3,8 +3,10 @@ import { HttpException, HttpStatus } from '@nestjs/common';
 export interface ConflictExceptionResponse {
   statusCode: number;
   message: string;
-  fields: string[];
+  details: FieldsProps;
 }
+
+type FieldsProps = string[];
 
 export class ConflictException extends HttpException {
   constructor(public fields: string[]) {
@@ -12,7 +14,7 @@ export class ConflictException extends HttpException {
       {
         statusCode: HttpStatus.CONFLICT,
         message: 'Conflict error',
-        fields,
+        details: fields,
       } as ConflictExceptionResponse,
       HttpStatus.CONFLICT,
     );

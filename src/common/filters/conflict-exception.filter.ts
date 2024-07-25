@@ -12,7 +12,7 @@ export class ConflictExceptionFilter implements ExceptionFilter {
     response.status(status).json({
       statusCode: status,
       message: exception.message,
-      fields: exception.fields,
+      details: { fields: exception.fields },
     });
   }
 }
