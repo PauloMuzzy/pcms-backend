@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { formatISODateToYYYYMMDD } from 'src/common/functions/format-date';
-import { DuplicateDetectorService } from 'src/common/modules/duplicate-detector/duplicate-detector.service';
+import { DatabaseService } from 'src/common/modules/database/database.service';
+import { UniqueFieldCheckerService } from 'src/common/modules/unique-field-checker/unique-field-checker.service';
 import { UuidService } from 'src/common/modules/uuid/uuid.service';
-import { DatabaseService } from 'src/database/database.service';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
+import { DeletePatientRequestDto } from 'src/modules/patients/dto/delete-patient-request.dto';
 import { FindPatientRequestDto } from 'src/modules/patients/dto/find-patients-request.dto';
 import { FindPatientsResponseDto } from 'src/modules/patients/dto/find-patients-response.dto';
 import { UpdatePatientRequestDto } from 'src/modules/patients/dto/update-patient-request.dto';
@@ -11,13 +12,22 @@ import { UpdatePatientRequestDto } from 'src/modules/patients/dto/update-patient
 @Injectable()
 export class PatientsService {
   constructor(
-    private readonly duplicateDetectorService: DuplicateDetectorService,
-    private readonly dbService: DatabaseService,
+    private readonly uniqueFieldCheckerService: UniqueFieldCheckerService,
+    private readonly databaseService: DatabaseService,
     private readonly uuidService: UuidService,
   ) {}
 
+  async isPatientRegistered(uuid: string): Promise<void> {
+    const result = await this.databaseService.query(
+      'SELECT uuid FROM patients WHERE uuid = ?;',
+      [uuid],
+    );
+    if (result.length === 0) throw new NotFoundException();
+  }
+
   async create(body: CreatePatientRequestDto): Promise<void> {
-    await this.duplicateDetectorService.checkForDuplicates('patients', {
+    const uuid = this.uuidService.generate();
+    await this.uniqueFieldCheckerService.check('patients', {
       cpf: body.cpf,
       email: body.email,
     });
@@ -44,8 +54,8 @@ export class PatientsService {
             ?,?,?,?,?,?,?,?,?,?,?,?
           )`;
 
-    await this.dbService.query(SQL, [
-      this.uuidService.generate(),
+    await this.databaseService.query(SQL, [
+      uuid,
       body.name,
       body.lastName,
       body.cpf,
@@ -124,13 +134,13 @@ export class PatientsService {
 
     SQL += ` LIMIT ${offset}, ${itemsPerPage}`;
 
-    return await this.dbService.query(SQL, queryParams);
+    return await this.databaseService.query(SQL, queryParams);
   }
 
   async update(body: UpdatePatientRequestDto): Promise<void> {
     await this.isPatientRegistered(body.uuid);
 
-    await this.duplicateDetectorService.checkForDuplicates('patients', {
+    await this.uniqueFieldCheckerService.check('patients', {
       cpf: body.cpf,
       email: body.email,
     });
@@ -154,7 +164,7 @@ export class PatientsService {
       LIMIT 1;
     `;
 
-    const result = await this.dbService.query(SQL, [
+    const result = await this.databaseService.query(SQL, [
       body.name,
       body.lastName,
       body.cpf,
@@ -173,22 +183,14 @@ export class PatientsService {
     if (result.affectedRows === 0) throw new NotFoundException();
   }
 
-  async delete(uuid: string): Promise<void> {
-    await this.isPatientRegistered(uuid);
+  async delete(query: DeletePatientRequestDto): Promise<void> {
+    await this.isPatientRegistered(query.uuid);
 
     const SQL = `
       DELETE FROM patients WHERE uuid = ? LIMIT 1;
     `;
 
-    const result = await this.dbService.query(SQL, [uuid]);
+    const result = await this.databaseService.query(SQL, [query.uuid]);
     if (result.affectedRows === 0) throw new NotFoundException();
-  }
-
-  async isPatientRegistered(uuid: string): Promise<void> {
-    const result = await this.dbService.query(
-      'SELECT uuid FROM patients WHERE uuid = ?;',
-      [uuid],
-    );
-    if (result.length === 0) throw new NotFoundException();
   }
 }

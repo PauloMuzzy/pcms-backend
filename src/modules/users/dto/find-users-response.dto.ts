@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class FindAllUsersResponseDto {
+export class FindUsersResponseDto {
   @ApiProperty()
-  id: number;
+  uuid?: string;
 
   @ApiProperty()
   name: string;
@@ -11,14 +11,23 @@ export class FindAllUsersResponseDto {
   lastName: string;
 
   @ApiProperty()
+  cpf: string;
+
+  @ApiProperty()
   email: string;
 
   @ApiProperty()
-  dateOfBirth: Date;
+  accessTypeId: number;
 
   @ApiProperty()
-  active: number;
+  dateOfBirth: string;
 
   @ApiProperty()
-  accessType: string;
+  createdAt?: Date;
+
+  @ApiProperty()
+  updatedAt?: Date;
+
+  @ApiProperty()
+  active: string;
 }

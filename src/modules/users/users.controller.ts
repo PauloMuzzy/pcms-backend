@@ -1,8 +1,28 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Put,
+  Query,
+  UseFilters,
+  UsePipes,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { ApiCommonResponses } from 'src/common/decorators/api-responses.decorator';
+import { ConflictExceptionFilter } from 'src/common/filters/conflict-exception.filter';
+import { CustomRequestValidatorPipe } from 'src/common/pipes/custom-request-validator.pipe';
 import { Public } from 'src/modules/auth/public.decorator';
 import { CreateUserRequestDto } from 'src/modules/users/dto/create-user-request.dto';
-import { FindAllUsersResponseDto } from 'src/modules/users/dto/find-all-users-response.dto';
+import { DeleteUserRequestDto } from 'src/modules/users/dto/delete-user-request.dto';
+import { FindUsersRequestDto } from 'src/modules/users/dto/find-users-request.dto';
+import { UpdateUserRequestDto } from 'src/modules/users/dto/update-user-request.dto';
 import { UsersService } from 'src/modules/users/users.service';
 
 @ApiTags('Users')
@@ -11,34 +31,39 @@ import { UsersService } from 'src/modules/users/users.service';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  //@UseGuards(JwtAuthGuard)
   @Public()
-  @Get()
-  @ApiResponse({
-    status: 200,
-    description: 'Return all users.',
-    type: [FindAllUsersResponseDto],
-  })
-  @ApiResponse({ status: 400, description: 'Invalid request.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  @ApiResponse({ status: 404, description: 'Resource not found.' })
-  @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async findAll() {
-    return true;
+  @UseFilters(ConflictExceptionFilter)
+  @UsePipes(new CustomRequestValidatorPipe(CreateUserRequestDto))
+  @ApiCommonResponses()
+  @ApiCreatedResponse()
+  @Post('create')
+  async create(@Body() body: CreateUserRequestDto) {
+    await this.usersService.create(body);
   }
 
-  //@UseGuards(JwtAuthGuard)
   @Public()
-  @Post('create')
-  @ApiResponse({
-    status: 201,
-    description: 'Register user successful.',
-  })
-  @ApiResponse({ status: 400, description: 'Invalid request.' })
-  @ApiResponse({ status: 404, description: 'Resource not found.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
-  @ApiResponse({ status: 500, description: 'Internal server error.' })
-  async create(@Body() body: CreateUserRequestDto) {
-    return true;
+  @UsePipes(new CustomRequestValidatorPipe(FindUsersRequestDto))
+  @ApiCommonResponses()
+  @Get('find')
+  async find(@Query() query: FindUsersRequestDto) {
+    return this.usersService.find(query);
+  }
+
+  @Public()
+  @UsePipes(new CustomRequestValidatorPipe(UpdateUserRequestDto))
+  @ApiCommonResponses()
+  @ApiOkResponse()
+  @Put('update')
+  async update(@Body() body: UpdateUserRequestDto) {
+    await this.usersService.update(body);
+  }
+
+  @Public()
+  @UsePipes(new CustomRequestValidatorPipe(DeleteUserRequestDto))
+  @ApiCommonResponses()
+  @ApiOkResponse()
+  @Delete('delete')
+  async delete(@Query() query: DeleteUserRequestDto) {
+    await this.usersService.delete(query);
   }
 }

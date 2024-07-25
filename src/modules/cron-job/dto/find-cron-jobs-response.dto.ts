@@ -30,4 +30,8 @@ export class FindCronJobsResponseDto {
   @IsNotEmpty()
   @IsBoolean()
   running: boolean;
+
+  @IsNotEmpty()
+  @IsBoolean()
+  active: boolean;
 }

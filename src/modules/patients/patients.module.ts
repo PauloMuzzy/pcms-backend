@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
 
-import { DuplicateDetectorModule } from 'src/common/modules/duplicate-detector/duplicate-detector.module';
+import { DatabaseModule } from 'src/common/modules/database/database.module';
+import { UniqueFieldCheckerModule } from 'src/common/modules/unique-field-checker/unique-field-checker.module';
 import { UuidModule } from 'src/common/modules/uuid/uuid.module';
-import { DatabaseModule } from 'src/database/database.module';
 import { PatientsController } from './patients.controller';
 import { PatientsService } from './patients.service';
 
 @Module({
-  imports: [DatabaseModule, DuplicateDetectorModule, UuidModule],
+  imports: [DatabaseModule, UniqueFieldCheckerModule, UuidModule],
   providers: [PatientsService],
   controllers: [PatientsController],
 })

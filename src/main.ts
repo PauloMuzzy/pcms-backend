@@ -16,11 +16,11 @@ async function bootstrap() {
     .setDescription('The PCMS API description')
     .setVersion('1.0')
     .addBearerAuth()
+    .addTag('Auth')
     .addTag('Users')
     .addTag('Patients')
-    .addTag('Auth')
     .addTag('Options')
-    .addTag('Cron-Jobs')
+    .addTag('CronJobs')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

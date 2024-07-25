@@ -7,7 +7,7 @@ import { CronJobService } from './cron-job.service';
 
 @ApiTags('CronJobs')
 @ApiBearerAuth()
-@Controller('cron')
+@Controller('cron-jobs')
 export class CronJobController {
   constructor(private readonly cronJobService: CronJobService) {}
 
@@ -32,5 +32,13 @@ export class CronJobController {
   @ApiOkResponse()
   stop(@Body() body: CronJobNameRequestDto): void {
     this.cronJobService.stop(body.name);
+  }
+
+  @Post('execute')
+  @UsePipes(new CustomRequestValidatorPipe(CronJobNameRequestDto))
+  @ApiCommonResponses()
+  @ApiOkResponse()
+  execute(@Body() body: CronJobNameRequestDto): void {
+    this.cronJobService.execute(body.name);
   }
 }

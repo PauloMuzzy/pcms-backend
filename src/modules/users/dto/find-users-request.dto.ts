@@ -1,17 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsDateString,
   IsEmail,
-  IsNumber,
+  IsIn,
+  IsNumberString,
   IsOptional,
   IsString,
+  IsUUID,
   Length,
 } from 'class-validator';
-export class UpdatePatientRequestDto {
-  @ApiProperty()
-  @IsString()
-  @Length(1, 100)
-  uuid: string;
+
+export class FindUsersRequestDto {
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsUUID('4')
+  uuid?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -21,13 +23,7 @@ export class UpdatePatientRequestDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsString()
-  @Length(1, 100)
-  lastName?: string;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsString()
+  @IsNumberString()
   @Length(11, 11)
   cpf?: string;
 
@@ -38,44 +34,35 @@ export class UpdatePatientRequestDto {
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsDateString()
-  dateOfBirth?: string;
+  @IsNumberString()
+  accessTypeId?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumber()
-  gender?: number;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsNumber()
-  profession?: number;
+  @IsIn(['0', '1'])
+  @IsNumberString()
+  active?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  @Length(11, 11)
-  phone?: string;
+  @IsIn(['name', 'dateOfBirth', 'createdAt'])
+  sortField?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  @Length(1, 100)
-  emergencyContactName?: string;
+  @IsIn(['ASC', 'DESC'])
+  sortDirection?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsString()
-  @Length(11, 11)
-  emergencyContactPhone?: string;
+  @IsNumberString()
+  page?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
-  @IsNumber()
-  emergencyContactRelationship?: number;
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsNumber()
-  active?: number;
+  @IsNumberString()
+  @IsIn(['10', '20', '50'])
+  itemsPerPage?: '10' | '20' | '50';
 }

@@ -10,10 +10,10 @@ export class OptionsController {
   constructor(private optionsService: OptionsService) {}
 
   @Public()
-  @Get(':optionName')
+  @Get('find/:name')
   async findOptionsList(
-    @Param() optionsDto: FindOptionsListRequestDto,
+    @Param() param: FindOptionsListRequestDto,
   ): Promise<any> {
-    return await this.optionsService.findOptionsList(optionsDto.optionName);
+    return await this.optionsService.findOptionsList(param.optionName);
   }
 }

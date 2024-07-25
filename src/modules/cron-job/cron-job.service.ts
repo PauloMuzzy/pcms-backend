@@ -1,8 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
-import { DatabaseService } from 'src/database/database.service';
 import { CronJobNameRequestDto } from 'src/modules/cron-job/dto/cron-job-name-request.dto';
+import { CleanupLogAppTableService } from 'src/modules/cron-job/services/cleanup-log-app-table.service';
 
 export interface CronJobInfo {
   name: string;
@@ -11,33 +15,26 @@ export interface CronJobInfo {
   lastExecutionDuration: number | null;
   nextExecution: Date | null;
   running: boolean;
+  active: boolean;
 }
 
 @Injectable()
 export class CronJobService {
-  private readonly logger = new Logger(CronJobService.name);
   private readonly cronJobs: Record<string, CronJobInfo> = {
     clearLogAppTable: {
       name: 'clearLogAppTable',
-      frequency: CronExpression.EVERY_MINUTE,
+      frequency: CronExpression.EVERY_HOUR,
       lastExecution: null,
       lastExecutionDuration: null,
       nextExecution: null,
       running: false,
-    },
-    addLogAppTable: {
-      name: 'addLogAppTable',
-      frequency: CronExpression.EVERY_30_SECONDS,
-      lastExecution: null,
-      lastExecutionDuration: null,
-      nextExecution: null,
-      running: false,
+      active: true,
     },
   };
 
   constructor(
-    private readonly databaseService: DatabaseService,
     private readonly schedulerRegistry: SchedulerRegistry,
+    private readonly cleanupLogAppTableService: CleanupLogAppTableService,
   ) {
     this.registerCronJobs();
   }
@@ -45,13 +42,10 @@ export class CronJobService {
   private registerCronJobs() {
     this.createCronJob(
       'clearLogAppTable',
-      CronExpression.EVERY_MINUTE,
-      this.clearLogAppTable.bind(this),
-    );
-    this.createCronJob(
-      'addLogAppTable',
-      CronExpression.EVERY_30_SECONDS,
-      this.addLogAppTable.bind(this),
+      CronExpression.EVERY_HOUR,
+      this.cleanupLogAppTableService.clearLogs.bind(
+        this.cleanupLogAppTableService,
+      ),
     );
   }
 
@@ -65,64 +59,37 @@ export class CronJobService {
       this.cronJobs[name].running = true;
       await task();
       const endTime = Date.now();
-      this.cronJobs[name].lastExecution = new Date();
-      this.cronJobs[name].lastExecutionDuration = endTime - startTime;
-      this.cronJobs[name].running = false;
+      this.updateCronJobExecutionDetails(name, startTime, endTime);
     });
 
     this.schedulerRegistry.addCronJob(name, job);
+    this.updateNextExecution(name, job);
+    job.start();
+  }
+
+  private updateCronJobExecutionDetails(
+    name: string,
+    startTime: number,
+    endTime: number,
+  ) {
+    this.cronJobs[name].lastExecution = new Date();
+    this.cronJobs[name].lastExecutionDuration = endTime - startTime;
+    this.cronJobs[name].running = false;
+  }
+
+  private updateNextExecution(name: string, job: CronJob) {
     const nextExecution = job.nextDates(1)[0];
     this.cronJobs[name].nextExecution = nextExecution
       ? nextExecution.toJSDate()
       : null;
-    job.start();
-    this.logger.log(`Cron job "${name}" scheduled: ${frequency}`);
-  }
-
-  async clearLogAppTable() {
-    const sql = 'DELETE FROM log_app';
-    try {
-      await this.databaseService.query(sql);
-    } catch (error) {}
-  }
-
-  async addLogAppTable() {
-    const sql = `
-      INSERT INTO log_app (
-        status_code,
-        createdAt,
-        path,
-        ip,
-        user_agent,
-        error_message,
-        stack,
-        file,
-        line
-      ) VALUES 
-       (? , ? , ? , ? , ? , ? , ? , ? , ?)
-    `;
-
-    try {
-      await this.databaseService.query(sql, [
-        '500',
-        '2024-07-23 15:45:00',
-        '/api/v1/resource',
-        '192.168.1.1',
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Internal server error occurred.',
-        'Error: ...\n at ...',
-        'app.service.js',
-        '42',
-      ]);
-    } catch (error) {}
   }
 
   find(): CronJobNameRequestDto[] {
     Object.values(this.cronJobs).forEach((job) => {
       const cronJob = this.schedulerRegistry.getCronJob(job.name);
       if (cronJob) {
-        const nextExecution = cronJob.nextDates(1)[0];
-        job.nextExecution = nextExecution ? nextExecution.toJSDate() : null;
+        this.updateNextExecution(job.name, cronJob);
+        job.active = cronJob.running;
       }
     });
     return Object.values(this.cronJobs);
@@ -133,6 +100,7 @@ export class CronJobService {
     if (job && !job.running) {
       job.start();
       this.cronJobs[name].running = true;
+      this.cronJobs[name].active = true;
     }
   }
 
@@ -141,6 +109,38 @@ export class CronJobService {
     if (job && job.running) {
       job.stop();
       this.cronJobs[name].running = false;
+      this.cronJobs[name].active = false;
+    }
+  }
+
+  async execute(name: string): Promise<void> {
+    const cronJobInfo = this.cronJobs[name];
+    if (!cronJobInfo) {
+      throw new NotFoundException(`Cron job with name ${name} not found`);
+    }
+
+    const task = this.createCronJobTasks(name);
+    if (task) {
+      const startTime = Date.now();
+      this.cronJobs[name].running = true;
+      await task();
+      const endTime = Date.now();
+      this.updateCronJobExecutionDetails(name, startTime, endTime);
+    } else {
+      throw new InternalServerErrorException(
+        `No task found for cron job with name ${name}`,
+      );
+    }
+  }
+
+  private createCronJobTasks(name: string): (() => Promise<void>) | null {
+    switch (name) {
+      case 'clearLogAppTable':
+        return this.cleanupLogAppTableService.clearLogs.bind(
+          this.cleanupLogAppTableService,
+        );
+      default:
+        return null;
     }
   }
 }

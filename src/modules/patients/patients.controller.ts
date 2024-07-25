@@ -38,7 +38,7 @@ export class PatientsController {
   @UsePipes(new CustomRequestValidatorPipe(CreatePatientRequestDto))
   @ApiCommonResponses()
   @ApiCreatedResponse()
-  @Post()
+  @Post('create')
   async create(@Body() body: CreatePatientRequestDto) {
     await this.patientsService.create(body);
   }
@@ -47,7 +47,7 @@ export class PatientsController {
   @UsePipes(new CustomRequestValidatorPipe(FindPatientRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse(FindPatientsResponseDto)
-  @Get()
+  @Get('find')
   async find(@Query() query: FindPatientRequestDto) {
     return this.patientsService.find(query);
   }
@@ -56,7 +56,7 @@ export class PatientsController {
   @UsePipes(new CustomRequestValidatorPipe(UpdatePatientRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse()
-  @Put()
+  @Put('update')
   async update(@Body() body: UpdatePatientRequestDto) {
     await this.patientsService.update(body);
   }
@@ -65,8 +65,8 @@ export class PatientsController {
   @UsePipes(new CustomRequestValidatorPipe(DeletePatientRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse()
-  @Delete(':uuid')
-  async deleteOne(@Param('uuid') param: DeletePatientRequestDto) {
-    await this.patientsService.delete(param.uuid);
+  @Delete('delete')
+  async delete(@Query() query: DeletePatientRequestDto) {
+    await this.patientsService.delete(query);
   }
 }

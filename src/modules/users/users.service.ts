@@ -1,14 +1,22 @@
-import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { DatabaseService } from 'src/database/database.service';
+import { DatabaseService } from 'src/common/modules/database/database.service';
+import { UniqueFieldCheckerService } from 'src/common/modules/unique-field-checker/unique-field-checker.service';
+import { UniqueRegisterCheckerService } from 'src/common/modules/unique-register-checker/unique-register-checker.service';
+import { UuidService } from 'src/common/modules/uuid/uuid.service';
 import { CreateUserRequestDto } from 'src/modules/users/dto/create-user-request.dto';
+import { DeleteUserRequestDto } from 'src/modules/users/dto/delete-user-request.dto';
+import { FindUsersRequestDto } from 'src/modules/users/dto/find-users-request.dto';
+import { FindUsersResponseDto } from 'src/modules/users/dto/find-users-response.dto';
+import { UpdateUserRequestDto } from 'src/modules/users/dto/update-user-request.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
-    private readonly mailerService: MailerService,
-    private readonly dbService: DatabaseService,
+    private readonly uniqueFieldCheckerService: UniqueFieldCheckerService,
+    private readonly uniqueRegisterCheckerService: UniqueRegisterCheckerService,
+    private readonly databaseService: DatabaseService,
+    private readonly uuidService: UuidService,
   ) {}
 
   private saltRounds = 10;
@@ -25,72 +33,197 @@ export class UsersService {
     return password;
   }
 
-  async hashPassword(password: string): Promise<string> {
+  async generateHashPassword(password: string): Promise<string> {
     const hashedPassword = await bcrypt.hash(password, this.saltRounds);
     return hashedPassword;
   }
 
-  async sendEmail(mailOptions: {
-    to: string;
-    subject: string;
-    text: string;
-    html: string;
-  }) {
-    await this.mailerService.sendMail({
-      to: mailOptions.to,
-      from: 'noreply@nestjs.com',
-      subject: mailOptions.subject,
-      text: mailOptions.text,
-      html: mailOptions.html,
-    });
+  // async sendEmail(mailOptions: {
+  //   to: string;
+  //   subject: string;
+  //   text: string;
+  //   html: string;
+  // }) {
+  //   await this.mailerService.sendMail({
+  //     to: mailOptions.to,
+  //     from: 'noreply@nestjs.com',
+  //     subject: mailOptions.subject,
+  //     text: mailOptions.text,
+  //     html: mailOptions.html,
+  //   });
+  // }
+
+  async isUserRegistered(uuid: string): Promise<void> {
+    const result = await this.databaseService.query(
+      'SELECT uuid FROM users WHERE uuid = ?;',
+      [uuid],
+    );
+    if (result.length === 0) throw new NotFoundException();
   }
 
-  async create(params: CreateUserRequestDto) {
+  async findCredentials(email: string): Promise<any> {
+    const SQL = `
+      SELECT 
+        uuid,
+        password
+      FROM 
+        users
+      WHERE 
+        email = ?`;
+
+    const result = await this.databaseService.query(SQL, [email]);
+    return result[0];
+  }
+
+  async create(body: CreateUserRequestDto): Promise<void> {
     const password = this.generatePassword();
-    const hashedPassword = await this.hashPassword(password);
+    const hashedPassword = await this.generateHashPassword(password);
+    const uuid = await this.uuidService.generate();
 
-    if (true) {
-      try {
-        await this.sendEmail({
-          to: 'paulokriger@gmail.com',
-          subject: 'Cadastro Realizado com Sucesso',
-          text: `Olá ${`Paulo`}! Seu cadastro foi realizado com sucesso! Sua senha é: ${password}`,
-          html: `<p>Olá ${`Paulo`}! Seu cadastro foi realizado com sucesso! Sua senha é: <strong>${password}</strong></p>`,
-        });
-      } catch (error) {
-        console.error('Erro ao enviar e-mail:', error);
-      }
+    await this.uniqueFieldCheckerService.check('users', {
+      cpf: body.cpf,
+      email: body.email,
+    });
+
+    // if (true) {
+    //   try {
+    //     await this.sendEmail({
+    //       to: 'paulokriger@gmail.com',
+    //       subject: 'Cadastro Realizado com Sucesso',
+    //       text: `Olá ${`Paulo`}! Seu cadastro foi realizado com sucesso! Sua senha é: ${password}`,
+    //       html: `<p>Olá ${`Paulo`}! Seu cadastro foi realizado com sucesso! Sua senha é: <strong>${password}</strong></p>`,
+    //     });
+    //   } catch (error) {
+    //     console.error('Erro ao enviar e-mail:', error);
+    //   }
+    // }
+
+    const SQL = `
+      INSERT INTO 
+          users
+          (uuid, name, lastName, email, cpf, accessTypeId, dateOfBirth, password)
+      VALUES 
+          (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    return await this.databaseService.query(SQL, [
+      uuid,
+      body.name,
+      body.lastName,
+      body.email,
+      body.cpf,
+      body.accessTypeId,
+      body.dateOfBirth,
+      hashedPassword,
+    ]);
+  }
+
+  async find(query: FindUsersRequestDto): Promise<FindUsersResponseDto[]> {
+    const where = [];
+    const queryParams = [];
+    const itemsPerPage = Number(query.itemsPerPage) || 10;
+    const pageNumber = Number(query.page) || 1;
+    const offset = (pageNumber - 1) * itemsPerPage;
+
+    let SQL = `
+    SELECT 
+      uuid,
+      name,
+      lastName,
+      email,
+      accessTypeId,
+      dateOfBirth,
+      createdAt,
+      updatedAt
+    FROM 
+      users
+    WHERE 1=1
+    `;
+
+    if (query.uuid) {
+      where.push(`uuid = ?`);
+      queryParams.push(query.uuid);
     }
+
+    if (query.name) {
+      where.push(`name LIKE ?`);
+      queryParams.push(`%${query.name}%`);
+    }
+
+    if (query.cpf) {
+      where.push(`cpf = ?`);
+      queryParams.push(query.cpf);
+    }
+
+    if (query.email) {
+      where.push(`email = ?`);
+      queryParams.push(query.email);
+    }
+
+    if (query.accessTypeId) {
+      where.push(`accessTypeId = ?`);
+      queryParams.push(query.accessTypeId);
+    }
+
+    if (query.active && query.active === '0') {
+      where.push(`active = 0`);
+    }
+
+    if (where.length > 0) {
+      SQL += ' AND ' + where.join(' AND ');
+    }
+
+    if (query.sortField && query.sortDirection) {
+      SQL += ` ORDER BY ${query.sortField} ${query.sortDirection}`;
+    } else {
+      SQL += ' ORDER BY CreatedAt DESC';
+    }
+
+    SQL += ` LIMIT ${offset}, ${itemsPerPage}`;
+
+    return await this.databaseService.query(SQL, queryParams);
   }
 
-  async findOnebyEmail(email: string): Promise<{
-    id: number;
-    name: string;
-    email: string;
-    password: string;
-  }> {
-    const SQL = `
-      SELECT 
-        *
-      FROM 
-          users
-      WHERE 
-          email = ?`;
+  async update(body: UpdateUserRequestDto): Promise<void> {
+    await this.uniqueRegisterCheckerService.check('users', body.uuid);
+    await this.uniqueFieldCheckerService.check('users', {
+      cpf: body.cpf,
+      email: body.email,
+    });
 
-    const result = await this.dbService.query(SQL, [email]);
-    return result[0];
+    const SQL = `
+      UPDATE 
+        users
+      SET 
+        name = ?,
+        lastName = ?,
+        email = ?,
+        cpf = ?,
+        accessTypeId = ?,
+        dateOfBirth = ?,
+        active = ?
+      WHERE 
+        uuid = ?`;
+
+    return await this.databaseService.query(SQL, [
+      body.name,
+      body.lastName,
+      body.email,
+      body.cpf,
+      body.accessTypeId,
+      body.dateOfBirth,
+      body.active,
+      body.uuid,
+    ]);
   }
 
-  async findOne(uuid: string): Promise<any> {
+  async delete(query: DeleteUserRequestDto): Promise<void> {
+    await this.uniqueRegisterCheckerService.check('users', query.uuid);
     const SQL = `
-      SELECT 
-        *
-      FROM 
-          users
+      DELETE FROM 
+        users
       WHERE 
-          id = ?`;
-
-    const result = await this.dbService.query(SQL, [uuid]);
-    return result[0];
+        uuid = ?
+      LIMIT 1 `;
+    return await this.databaseService.query(SQL, [query.uuid]);
   }
 }

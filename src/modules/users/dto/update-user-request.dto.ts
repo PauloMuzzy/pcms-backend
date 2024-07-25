@@ -1,7 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsIn, IsNotEmpty, IsString, Length } from 'class-validator';
+import {
+  IsEmail,
+  IsIn,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsUUID,
+  Length,
+} from 'class-validator';
 
-export class CreateUserRequestDto {
+export class UpdateUserRequestDto {
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsUUID('4')
+  uuid: string;
+
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
@@ -26,7 +39,7 @@ export class CreateUserRequestDto {
 
   @ApiProperty()
   @IsNotEmpty()
-  @IsIn([1, 2])
+  @IsNumber()
   accessTypeId: number;
 
   @ApiProperty()
@@ -34,4 +47,9 @@ export class CreateUserRequestDto {
   @IsString()
   @Length(1, 100)
   dateOfBirth: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsIn([0, 1])
+  active: number;
 }

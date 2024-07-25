@@ -20,7 +20,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<LoginResponseDto> {
-    const user = await this.usersService.findOnebyEmail(email);
+    const user = await this.usersService.findCredentials(email);
 
     if (!user.password) {
       throw new BadRequestException('Usuário ou Senha Inválidos');
@@ -29,7 +29,7 @@ export class AuthService {
     if (await bcrypt.compare(password, user.password)) {
       return {
         access_token: this.jwtService.sign(
-          { id: user.id },
+          { id: user.uuid },
           {
             secret: process.env.SECRET_KEY_JWT,
             expiresIn: '1d',
