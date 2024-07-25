@@ -7,7 +7,7 @@ import { UuidModule } from 'src/common/modules/uuid/uuid.module';
 import { mailerConfig } from 'src/config/mailer/mailer.config';
 import { AditionalInformationsModule } from 'src/modules/aditional-informations/aditional-informations.module';
 import { AuthModule } from 'src/modules/auth/auth.module';
-import { CronJobModule } from 'src/modules/cron-job/cron-job.module';
+import { CronJobsModule } from 'src/modules/cron-jobs/cron-jobs.module';
 import { OptionsModule } from 'src/modules/options/options.module';
 import { PatientsModule } from 'src/modules/patients/patients.module';
 import { SessionReportsModule } from 'src/modules/session-reports/session-reports.module';
@@ -27,7 +27,7 @@ require('dotenv').config();
     UniqueRegisterCheckerModule,
     UuidModule,
     LoggerModule,
-    CronJobModule,
+    CronJobsModule,
   ],
 })
 export class AppModule {}

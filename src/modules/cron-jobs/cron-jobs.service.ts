@@ -5,10 +5,10 @@ import {
 } from '@nestjs/common';
 import { CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
-import { CronJobNameRequestDto } from 'src/modules/cron-job/dto/cron-job-name-request.dto';
-import { CleanupLogAppTableService } from 'src/modules/cron-job/services/cleanup-log-app-table.service';
+import { CronJobsNameRequestDto } from 'src/modules/cron-jobs/dto/cron-jobs-name-request.dto';
+import { CleanupLogAppTableService } from 'src/modules/cron-jobs/services/cleanup-log-app-table.service';
 
-export interface CronJobInfo {
+export interface CronJobsInfo {
   name: string;
   frequency: string;
   lastExecution: Date | null;
@@ -19,8 +19,8 @@ export interface CronJobInfo {
 }
 
 @Injectable()
-export class CronJobService {
-  private readonly cronJobs: Record<string, CronJobInfo> = {
+export class CronJobsService {
+  private readonly cronJobs: Record<string, CronJobsInfo> = {
     clearLogAppTable: {
       name: 'clearLogAppTable',
       frequency: CronExpression.EVERY_HOUR,
@@ -84,7 +84,18 @@ export class CronJobService {
       : null;
   }
 
-  find(): CronJobNameRequestDto[] {
+  private createCronJobTasks(name: string): (() => Promise<void>) | null {
+    switch (name) {
+      case 'clearLogAppTable':
+        return this.cleanupLogAppTableService.clearLogs.bind(
+          this.cleanupLogAppTableService,
+        );
+      default:
+        return null;
+    }
+  }
+
+  find(): CronJobsNameRequestDto[] {
     Object.values(this.cronJobs).forEach((job) => {
       const cronJob = this.schedulerRegistry.getCronJob(job.name);
       if (cronJob) {
@@ -130,17 +141,6 @@ export class CronJobService {
       throw new InternalServerErrorException(
         `No task found for cron job with name ${name}`,
       );
-    }
-  }
-
-  private createCronJobTasks(name: string): (() => Promise<void>) | null {
-    switch (name) {
-      case 'clearLogAppTable':
-        return this.cleanupLogAppTableService.clearLogs.bind(
-          this.cleanupLogAppTableService,
-        );
-      default:
-        return null;
     }
   }
 }
