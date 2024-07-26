@@ -11,10 +11,17 @@ import {
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
+import { SwaggerRoute } from 'src/common/decorators/swagger-route.decorator';
 import { ConflictExceptionFilter } from 'src/common/filters/conflict-exception.filter';
 import { CustomRequestValidatorPipe } from 'src/common/pipes/custom-request-validator.pipe';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
+import {
+  CREATE_USER_SWAGGER_DOC,
+  EDIT_USER_SWAGGER_DOC,
+  FIND_USERS_SWAGGER_DOC,
+  REMOVE_USER_SWAGGER_DOC,
+} from 'src/modules/users/documentation/swagger-decorators';
 import { CreateUserRequestDto } from 'src/modules/users/dto/create-user-request.dto';
 import { DeleteUserRequestDto } from 'src/modules/users/dto/delete-user-request.dto';
 import { FindUsersRequestDto } from 'src/modules/users/dto/find-users-request.dto';
@@ -30,7 +37,7 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @UseFilters(ConflictExceptionFilter)
   @UsePipes(new CustomRequestValidatorPipe(CreateUserRequestDto))
-  @ApiCreatedResponse()
+  @SwaggerRoute(CREATE_USER_SWAGGER_DOC)
   @Post()
   async create(@Body() body: CreateUserRequestDto) {
     await this.usersService.create(body);
@@ -38,7 +45,7 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(FindUsersRequestDto))
-  @ApiOkResponse({ type: [FindUsersResponseDto] })
+  @SwaggerRoute(FIND_USERS_SWAGGER_DOC)
   @Get()
   async find(
     @Query() query: FindUsersRequestDto,
@@ -48,7 +55,7 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(UpdateUserRequestDto))
-  @ApiOkResponse()
+  @SwaggerRoute(EDIT_USER_SWAGGER_DOC)
   @Patch()
   async edit(@Body() body: UpdateUserRequestDto) {
     await this.usersService.edit(body);
@@ -56,9 +63,9 @@ export class UsersController {
 
   @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(DeleteUserRequestDto))
-  @ApiOkResponse()
+  @SwaggerRoute(REMOVE_USER_SWAGGER_DOC)
   @Delete(':uuid')
-  async delete(@Param('uuid') param: DeleteUserRequestDto) {
+  async remove(@Param('uuid') param: DeleteUserRequestDto) {
     await this.usersService.remove(param.uuid);
   }
 }

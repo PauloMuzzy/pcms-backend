@@ -6,12 +6,18 @@ import {
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
+import { SwaggerRoute } from 'src/common/decorators/swagger-route.decorator';
 import { CustomRequestValidatorPipe } from 'src/common/pipes/custom-request-validator.pipe';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { CronJobsService } from 'src/modules/cron-jobs/cron-jobs.service';
+import {
+  EXECUTE_CRON_JOB_SWAGGER_DOC,
+  FIND_CRON_JOBS_SWAGGER_DOC,
+  START_CRON_JOB_SWAGGER_DOC,
+  STOP_CRON_JOB_SWAGGER_DOC,
+} from 'src/modules/cron-jobs/documentation/swagger-decorators';
 import { CronJobsNameRequestDto } from 'src/modules/cron-jobs/dto/cron-jobs-name-request.dto';
-import { FindCronJobsResponseDto } from 'src/modules/cron-jobs/dto/find-cron-jobs-response.dto';
 
 @ApiTags('CronJobs')
 @Controller('cron-jobs')
@@ -19,7 +25,7 @@ export class CronJobsController {
   constructor(private readonly cronJobsService: CronJobsService) {}
 
   @UseGuards(JwtAuthGuard)
-  @ApiOkResponse({ type: [FindCronJobsResponseDto] })
+  @SwaggerRoute(FIND_CRON_JOBS_SWAGGER_DOC)
   @Get()
   find(): CronJobsNameRequestDto[] {
     return this.cronJobsService.find();
@@ -27,7 +33,7 @@ export class CronJobsController {
 
   @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(CronJobsNameRequestDto))
-  @ApiOkResponse()
+  @SwaggerRoute(START_CRON_JOB_SWAGGER_DOC)
   @Post('start/:name')
   start(@Param('name') param: CronJobsNameRequestDto): void {
     this.cronJobsService.start(param.name);
@@ -35,7 +41,7 @@ export class CronJobsController {
 
   @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(CronJobsNameRequestDto))
-  @ApiOkResponse()
+  @SwaggerRoute(STOP_CRON_JOB_SWAGGER_DOC)
   @Post('stop/:name')
   stop(@Param('name') param: CronJobsNameRequestDto): void {
     this.cronJobsService.stop(param.name);
@@ -43,7 +49,7 @@ export class CronJobsController {
 
   @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(CronJobsNameRequestDto))
-  @ApiOkResponse()
+  @SwaggerRoute(EXECUTE_CRON_JOB_SWAGGER_DOC)
   @Post('execute/:name')
   execute(@Param('name') param: CronJobsNameRequestDto): void {
     this.cronJobsService.execute(param.name);
