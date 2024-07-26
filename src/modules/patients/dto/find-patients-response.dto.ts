@@ -17,10 +17,10 @@ export class FindPatientsResponseDto {
   dateOfBirth: Date;
 
   @ApiProperty()
-  gender: string;
+  genderId: number;
 
   @ApiProperty()
-  profession: string;
+  professionId: number;
 
   @ApiProperty()
   phone: string;
@@ -32,7 +32,7 @@ export class FindPatientsResponseDto {
   emergencyContactPhone: string;
 
   @ApiProperty()
-  emergencyContactRelationship: string;
+  emergencyContactRelationshipId: number;
 
   @ApiProperty()
   active: string;

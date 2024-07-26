@@ -77,47 +77,44 @@ export class PatientsService {
 
     let SQL = `
     SELECT 
-        p.uuid,
-        p.name,
-        p.lastName,
-        p.email,
-        p.dateOfBirth,
-        p.phone,
-        p.emergencyContactName,
-        p.emergencyContactPhone,
-        p.active,
-        prof.name AS profession,
-        g.name AS gender,
-        ecr.name AS emergencyContactRelationship
-    FROM patients p
-    INNER JOIN genders g ON p.genderId = g.id
-    INNER JOIN professions prof ON p.professionId = prof.id
-    INNER JOIN emergency_contact_relationships ecr ON p.emergencyContactRelationshipId = ecr.id
+        uuid,
+        name,
+        lastName,
+        email,
+        dateOfBirth,
+        phone,
+        emergencyContactName,
+        emergencyContactPhone,
+        active,
+        professionId,
+        genderId,
+        emergencyContactRelationshipId
+    FROM patients 
     WHERE 1=1
     `;
 
     if (query.uuid) {
-      where.push(`p.uuid = ?`);
+      where.push(`uuid = ?`);
       queryParams.push(query.uuid);
     }
 
     if (query.name) {
-      where.push(`p.name LIKE ?`);
+      where.push(`name LIKE ?`);
       queryParams.push(`%${query.name}%`);
     }
 
     if (query.cpf) {
-      where.push(`p.cpf = ?`);
+      where.push(`cpf = ?`);
       queryParams.push(query.cpf);
     }
 
     if (query.email) {
-      where.push(`p.email = ?`);
+      where.push(`email = ?`);
       queryParams.push(query.email);
     }
 
     if (query.active && query.active === '0') {
-      where.push(`p.active = 0`);
+      where.push(`active = 0`);
     }
 
     if (where.length > 0) {
