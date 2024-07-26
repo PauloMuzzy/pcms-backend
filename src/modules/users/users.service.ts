@@ -189,33 +189,31 @@ export class UsersService {
       },
       uuid: body.uuid,
     });
+
+    const updates = [];
+    const params = [];
+
+    for (const [key, value] of Object.entries(body)) {
+      if (key !== 'uuid' && value !== undefined) {
+        updates.push(`${key} = ?`);
+        params.push(value);
+      }
+    }
+
+    params.push(body.uuid);
+
     const SQL = `
-      UPDATE 
-        users
-      SET 
-        name = ?,
-        lastName = ?,
-        email = ?,
-        cpf = ?,
-        accessTypeId = ?,
-        dateOfBirth = ?,
-        active = ?
-      WHERE 
-        uuid = ?`;
+      UPDATE users
+      SET ${updates.join(', ')}
+      WHERE uuid = ?
+      LIMIT 1;
+    `;
 
-    const result = await this.databaseService.query(SQL, [
-      body.name,
-      body.lastName,
-      body.email,
-      body.cpf,
-      body.accessTypeId,
-      body.dateOfBirth,
-      body.active,
-      body.uuid,
-    ]);
+    const result = await this.databaseService.query(SQL, params);
 
-    if (result.changedRows === 0)
+    if (result.changedRows === 0) {
       throw new NotFoundException('User not changed');
+    }
   }
 
   async remove(uuid: string): Promise<void> {

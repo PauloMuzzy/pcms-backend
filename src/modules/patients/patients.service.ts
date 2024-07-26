@@ -149,47 +149,33 @@ export class PatientsService {
       uuid: body.uuid,
     });
 
+    const updates = [];
+    const params = [];
+
+    for (const [key, value] of Object.entries(body)) {
+      if (key !== 'uuid' && value !== undefined) {
+        updates.push(`${key} = ?`);
+        params.push(value);
+      }
+    }
+
+    params.push(body.uuid);
+
     const SQL = `
       UPDATE patients
-      SET 
-        name = ?,
-        lastname = ?,
-        cpf = ?,
-        email = ?,
-        dateOfBirth = ?,
-        genderId = ?,
-        professionId = ?,
-        phone = ?,
-        emergencyContactName = ?,
-        emergencyContactPhone = ?,
-        emergencyContactRelationshipId = ?,
-        active = ?
+      SET ${updates.join(', ')}
       WHERE uuid = ?
       LIMIT 1;
     `;
 
-    const result = await this.databaseService.query(SQL, [
-      body.name,
-      body.lastName,
-      body.cpf,
-      body.email,
-      body.dateOfBirth,
-      body.gender,
-      body.profession,
-      body.phone,
-      body.emergencyContactName,
-      body.emergencyContactPhone,
-      body.emergencyContactRelationship,
-      body.active,
-      body.uuid,
-    ]);
-    if (result.changedRows === 0)
+    const result = await this.databaseService.query(SQL, params);
+
+    if (result.changedRows === 0) {
       throw new NotFoundException('Patient not changed');
+    }
   }
 
   async remove(uuid: string): Promise<void> {
-    console.log(uuid);
-
     await this.uniqueRegisterCheckerService.check('patients', uuid);
 
     const SQL = `

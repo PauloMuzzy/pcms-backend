@@ -14,11 +14,20 @@ export class UniqueFieldCheckerService {
 
   async check(parameters: CheckParameters): Promise<string[]> {
     const { tableName, fields, uuid } = parameters;
-    const whereConditions = Object.keys(fields)
+
+    const filteredFields = Object.fromEntries(
+      Object.entries(fields).filter(([_, value]) => value !== undefined),
+    );
+
+    if (Object.keys(filteredFields).length === 0) {
+      return [];
+    }
+
+    const whereConditions = Object.keys(filteredFields)
       .map((key) => `${key} = ?`)
       .join(' OR ');
 
-    const values = Object.values(fields);
+    const values = Object.values(filteredFields);
 
     let sql = `SELECT * FROM ${tableName} WHERE (${whereConditions})`;
 
@@ -29,9 +38,9 @@ export class UniqueFieldCheckerService {
 
     const existingEntities = await this.databaseService.query(sql, values);
 
-    const duplicatedFields = Object.keys(fields).filter((key) => {
+    const duplicatedFields = Object.keys(filteredFields).filter((key) => {
       return existingEntities.some((entity: { [x: string]: any }) => {
-        return this.isValueInEntity(entity, fields[key]);
+        return this.isValueInEntity(entity, filteredFields[key]);
       });
     });
 
@@ -49,6 +58,7 @@ export class UniqueFieldCheckerService {
   }
 
   private isEqual(a: any, b: any): boolean {
+    if (a === undefined || b === undefined) return false;
     if (a.toString() === b.toString()) return true;
 
     if (a instanceof Date && b instanceof Date) {
