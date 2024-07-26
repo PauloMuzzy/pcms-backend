@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { LoginRequestDto } from 'src/modules/auth/dto/login-request.dto';
 import { LoginResponseDto } from 'src/modules/auth/dto/login-response.dto';
 import { UsersService } from 'src/modules/users/users.service';
 require('dotenv').config();
@@ -16,17 +17,14 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(
-    email: string,
-    password: string,
-  ): Promise<LoginResponseDto> {
-    const user = await this.usersService.findCredentials(email);
+  async validateUser(body: LoginRequestDto): Promise<LoginResponseDto> {
+    const user = await this.usersService.findCredentials(body.email);
 
     if (!user.password) {
       throw new BadRequestException('Usuário ou Senha Inválidos');
     }
 
-    if (await bcrypt.compare(password, user.password)) {
+    if (await bcrypt.compare(body.password, user.password)) {
       return {
         access_token: this.jwtService.sign(
           { id: user.uuid },

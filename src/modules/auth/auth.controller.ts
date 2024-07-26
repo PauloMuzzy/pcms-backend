@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { LoginRequestDto } from 'src/modules/auth/dto/login-request.dto';
 import { LoginResponseDto } from 'src/modules/auth/dto/login-response.dto';
 import { Public } from 'src/modules/auth/public.decorator';
@@ -11,16 +11,9 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Public()
+  @ApiOkResponse({ type: LoginResponseDto })
   @Post('login')
-  @ApiResponse({
-    status: 200,
-    description: 'Login successful.',
-    type: LoginResponseDto,
-  })
-  @ApiResponse({ status: 400, description: 'Invalid request.' })
-  @ApiResponse({ status: 404, description: 'Resource not found.' })
-  @ApiResponse({ status: 500, description: 'Internal server error.' })
   async login(@Body() body: LoginRequestDto): Promise<LoginResponseDto> {
-    return await this.authService.validateUser(body.email, body.password);
+    return await this.authService.validateUser(body);
   }
 }

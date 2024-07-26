@@ -1,37 +1,63 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsDateString,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
 
 export class FindCronJobsResponseDto {
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Name of the cron job',
+    example: 'clearLogAppTable',
+  })
   @IsString()
+  @IsNotEmpty()
   name: string;
 
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Frequency of the cron job',
+    example: '0 0-23/1 * * *',
+  })
   @IsString()
+  @IsNotEmpty()
   frequency: string;
 
+  @ApiProperty({
+    description: 'Last execution',
+    example: null,
+    type: 'string',
+    nullable: true,
+  })
   @IsOptional()
-  @IsString()
+  @IsDateString()
   lastExecution: string | null;
 
+  @ApiProperty({
+    description: 'Duration of the last execution',
+    example: null,
+    type: 'number',
+    nullable: true,
+  })
   @IsOptional()
-  @IsNumber()
   lastExecutionDuration: number | null;
 
-  @IsNotEmpty()
-  @IsString()
+  @ApiProperty({
+    description: 'Next execution',
+    example: '2024-07-26T02:00:00.000Z',
+  })
+  @IsDateString()
   nextExecution: string;
 
-  @IsNotEmpty()
+  @ApiProperty({
+    description: 'Whether the cron job is currently running',
+    example: false,
+  })
   @IsBoolean()
   running: boolean;
 
-  @IsNotEmpty()
+  @ApiProperty({ description: 'Whether the cron job is active', example: true })
   @IsBoolean()
   active: boolean;
 }

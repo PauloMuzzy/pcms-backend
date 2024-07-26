@@ -11,12 +11,7 @@ import {
   UseGuards,
   UsePipes,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import {
-  ApiCommonResponses,
-  ApiCreatedResponse,
-  ApiOkResponse,
-} from 'src/common/decorators/api-responses.decorator';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ConflictExceptionFilter } from 'src/common/filters/conflict-exception.filter';
 import { CustomRequestValidatorPipe } from 'src/common/pipes/custom-request-validator.pipe';
 import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
@@ -28,16 +23,13 @@ import { UpdatePatientRequestDto } from 'src/modules/patients/dto/update-patient
 import { PatientsService } from 'src/modules/patients/patients.service';
 
 @ApiTags('Patients')
-@ApiBearerAuth()
 @Controller('patients')
 export class PatientsController {
   constructor(private readonly patientsService: PatientsService) {}
 
   @UseGuards(JwtAuthGuard)
   @UseFilters(ConflictExceptionFilter)
-  @UsePipes(new CustomRequestValidatorPipe(CreatePatientRequestDto))
-  @ApiCommonResponses()
-  @ApiCreatedResponse()
+  @ApiOkResponse()
   @Post()
   async create(@Body() body: CreatePatientRequestDto) {
     await this.patientsService.create(body);
@@ -45,8 +37,7 @@ export class PatientsController {
 
   @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(FindPatientRequestDto))
-  @ApiCommonResponses()
-  @ApiOkResponse(FindPatientsResponseDto)
+  @ApiOkResponse({ type: [FindPatientsResponseDto] })
   @Get()
   async find(@Query() query: FindPatientRequestDto) {
     return this.patientsService.find(query);
@@ -54,7 +45,6 @@ export class PatientsController {
 
   @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(UpdatePatientRequestDto))
-  @ApiCommonResponses()
   @ApiOkResponse()
   @Patch()
   async edit(@Body() body: UpdatePatientRequestDto) {
@@ -63,7 +53,6 @@ export class PatientsController {
 
   @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(DeletePatientRequestDto))
-  @ApiCommonResponses()
   @ApiOkResponse()
   @Delete(':uuid')
   async delete(@Param('uuid') param: DeletePatientRequestDto) {

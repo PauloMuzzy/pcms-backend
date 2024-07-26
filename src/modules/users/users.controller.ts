@@ -8,60 +8,54 @@ import {
   Post,
   Query,
   UseFilters,
+  UseGuards,
   UsePipes,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOkResponse,
-  ApiTags,
-} from '@nestjs/swagger';
-import { ApiCommonResponses } from 'src/common/decorators/api-responses.decorator';
+import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ConflictExceptionFilter } from 'src/common/filters/conflict-exception.filter';
 import { CustomRequestValidatorPipe } from 'src/common/pipes/custom-request-validator.pipe';
-import { Public } from 'src/modules/auth/public.decorator';
+import { JwtAuthGuard } from 'src/modules/auth/jwt-auth.guard';
 import { CreateUserRequestDto } from 'src/modules/users/dto/create-user-request.dto';
 import { DeleteUserRequestDto } from 'src/modules/users/dto/delete-user-request.dto';
 import { FindUsersRequestDto } from 'src/modules/users/dto/find-users-request.dto';
+import { FindUsersResponseDto } from 'src/modules/users/dto/find-users-response.dto';
 import { UpdateUserRequestDto } from 'src/modules/users/dto/update-user-request.dto';
 import { UsersService } from 'src/modules/users/users.service';
 
 @ApiTags('Users')
-@ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @Public()
+  @UseGuards(JwtAuthGuard)
   @UseFilters(ConflictExceptionFilter)
   @UsePipes(new CustomRequestValidatorPipe(CreateUserRequestDto))
-  @ApiCommonResponses()
   @ApiCreatedResponse()
   @Post()
   async create(@Body() body: CreateUserRequestDto) {
     await this.usersService.create(body);
   }
 
-  @Public()
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(FindUsersRequestDto))
-  @ApiCommonResponses()
+  @ApiOkResponse({ type: [FindUsersResponseDto] })
   @Get()
-  async find(@Query() query: FindUsersRequestDto) {
+  async find(
+    @Query() query: FindUsersRequestDto,
+  ): Promise<FindUsersResponseDto[]> {
     return this.usersService.find(query);
   }
 
-  @Public()
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(UpdateUserRequestDto))
-  @ApiCommonResponses()
   @ApiOkResponse()
   @Patch()
   async edit(@Body() body: UpdateUserRequestDto) {
     await this.usersService.edit(body);
   }
 
-  @Public()
+  @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(DeleteUserRequestDto))
-  @ApiCommonResponses()
   @ApiOkResponse()
   @Delete(':uuid')
   async delete(@Param('uuid') param: DeleteUserRequestDto) {
