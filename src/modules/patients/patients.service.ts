@@ -5,7 +5,6 @@ import { UniqueFieldCheckerService } from 'src/common/modules/unique-field-check
 import { UniqueRegisterCheckerService } from 'src/common/modules/unique-register-checker/unique-register-checker.service';
 import { UuidService } from 'src/common/modules/uuid/uuid.service';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
-import { DeletePatientRequestDto } from 'src/modules/patients/dto/delete-patient-request.dto';
 import { FindPatientRequestDto } from 'src/modules/patients/dto/find-patients-request.dto';
 import { FindPatientsResponseDto } from 'src/modules/patients/dto/find-patients-response.dto';
 import { UpdatePatientRequestDto } from 'src/modules/patients/dto/update-patient-request.dto';
@@ -188,14 +187,16 @@ export class PatientsService {
       throw new NotFoundException('Patient not changed');
   }
 
-  async remove(query: DeletePatientRequestDto): Promise<void> {
-    await this.uniqueRegisterCheckerService.check('patients', query.uuid);
+  async remove(uuid: string): Promise<void> {
+    console.log(uuid);
+
+    await this.uniqueRegisterCheckerService.check('patients', uuid);
 
     const SQL = `
       DELETE FROM patients WHERE uuid = ? LIMIT 1;
     `;
 
-    const result = await this.databaseService.query(SQL, [query.uuid]);
+    const result = await this.databaseService.query(SQL, [uuid]);
     if (result.affectedRows === 0)
       throw new NotFoundException('Patient not found');
   }

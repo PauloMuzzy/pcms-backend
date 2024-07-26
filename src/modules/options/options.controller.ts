@@ -1,7 +1,13 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, UsePipes } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
+import {
+  ApiCommonResponses,
+  ApiOkResponse,
+} from 'src/common/decorators/api-responses.decorator';
+import { CustomRequestValidatorPipe } from 'src/common/pipes/custom-request-validator.pipe';
 import { Public } from 'src/modules/auth/public.decorator';
 import { FindOptionsListRequestDto } from 'src/modules/options/dto/find-options-list-request.dto';
+import { FindOptionsListResponseDto } from 'src/modules/options/dto/find-options-list-response.dto';
 import { OptionsService } from './options.service';
 
 @ApiTags('Options')
@@ -10,10 +16,13 @@ export class OptionsController {
   constructor(private optionsService: OptionsService) {}
 
   @Public()
-  @Get('find/:name')
+  @UsePipes(new CustomRequestValidatorPipe(FindOptionsListRequestDto))
+  @ApiCommonResponses()
+  @ApiOkResponse(FindOptionsListResponseDto)
+  @Get(':name')
   async findOptionsList(
-    @Param() param: FindOptionsListRequestDto,
-  ): Promise<any> {
-    return await this.optionsService.findOptionsList(param.optionName);
+    @Param('name') param: FindOptionsListRequestDto,
+  ): Promise<FindOptionsListResponseDto[]> {
+    return await this.optionsService.findOptionsList(param.name);
   }
 }

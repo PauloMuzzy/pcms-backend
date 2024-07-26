@@ -66,7 +66,7 @@ export class PatientsController {
   @ApiCommonResponses()
   @ApiOkResponse()
   @Delete(':uuid')
-  async delete(@Param() params: DeletePatientRequestDto) {
-    await this.patientsService.remove(params);
+  async delete(@Param('uuid') param: DeletePatientRequestDto) {
+    await this.patientsService.remove(param.uuid);
   }
 }

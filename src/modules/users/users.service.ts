@@ -6,7 +6,6 @@ import { UniqueFieldCheckerService } from 'src/common/modules/unique-field-check
 import { UniqueRegisterCheckerService } from 'src/common/modules/unique-register-checker/unique-register-checker.service';
 import { UuidService } from 'src/common/modules/uuid/uuid.service';
 import { CreateUserRequestDto } from 'src/modules/users/dto/create-user-request.dto';
-import { DeleteUserRequestDto } from 'src/modules/users/dto/delete-user-request.dto';
 import { FindUsersRequestDto } from 'src/modules/users/dto/find-users-request.dto';
 import { FindUsersResponseDto } from 'src/modules/users/dto/find-users-response.dto';
 import { UpdateUserRequestDto } from 'src/modules/users/dto/update-user-request.dto';
@@ -219,14 +218,14 @@ export class UsersService {
       throw new NotFoundException('User not changed');
   }
 
-  async remove(query: DeleteUserRequestDto): Promise<void> {
-    await this.uniqueRegisterCheckerService.check('users', query.uuid);
+  async remove(uuid: string): Promise<void> {
+    await this.uniqueRegisterCheckerService.check('users', uuid);
     const SQL = `
       DELETE FROM 
         users
       WHERE 
         uuid = ?
       LIMIT 1 `;
-    return await this.databaseService.query(SQL, [query.uuid]);
+    return await this.databaseService.query(SQL, [uuid]);
   }
 }

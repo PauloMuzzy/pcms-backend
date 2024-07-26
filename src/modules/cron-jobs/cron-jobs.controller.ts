@@ -7,7 +7,7 @@ import { CronJobsNameRequestDto } from 'src/modules/cron-jobs/dto/cron-jobs-name
 
 @ApiTags('CronJobs')
 @ApiBearerAuth()
-@Controller('cron-jobss')
+@Controller('cron-jobs')
 export class CronJobsController {
   constructor(private readonly cronJobsService: CronJobsService) {}
 
@@ -22,23 +22,23 @@ export class CronJobsController {
   @ApiCommonResponses()
   @ApiOkResponse()
   @Post('start/:name')
-  start(@Param('name') name: CronJobsNameRequestDto): void {
-    this.cronJobsService.start(name.toString());
+  start(@Param('name') param: CronJobsNameRequestDto): void {
+    this.cronJobsService.start(param.name);
   }
 
   @UsePipes(new CustomRequestValidatorPipe(CronJobsNameRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse()
   @Post('stop/:name')
-  stop(@Param('name') name: CronJobsNameRequestDto): void {
-    this.cronJobsService.stop(name.toString());
+  stop(@Param('name') param: CronJobsNameRequestDto): void {
+    this.cronJobsService.stop(param.name);
   }
 
   @UsePipes(new CustomRequestValidatorPipe(CronJobsNameRequestDto))
   @ApiCommonResponses()
   @ApiOkResponse()
   @Post('execute/:name')
-  execute(@Param('name') name: CronJobsNameRequestDto): void {
-    this.cronJobsService.execute(name.toString());
+  execute(@Param('name') param: CronJobsNameRequestDto): void {
+    this.cronJobsService.execute(param.name);
   }
 }

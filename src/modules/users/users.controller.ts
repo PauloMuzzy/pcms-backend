@@ -64,7 +64,7 @@ export class UsersController {
   @ApiCommonResponses()
   @ApiOkResponse()
   @Delete(':uuid')
-  async remove(@Param() params: DeleteUserRequestDto) {
-    await this.usersService.remove(params);
+  async delete(@Param('uuid') param: DeleteUserRequestDto) {
+    await this.usersService.remove(param.uuid);
   }
 }
