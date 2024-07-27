@@ -9,6 +9,7 @@ import { CreateUserRequestDto } from 'src/modules/users/dto/create-user-request.
 import { FindUsersRequestDto } from 'src/modules/users/dto/find-users-request.dto';
 import { FindUsersResponseDto } from 'src/modules/users/dto/find-users-response.dto';
 import { UpdateUserRequestDto } from 'src/modules/users/dto/update-user-request.dto';
+import { FindUsersQueryModel } from 'src/modules/users/model/find-user-query.model';
 
 @Injectable()
 export class UsersService {
@@ -35,8 +36,8 @@ export class UsersService {
   }
 
   async generateHashPassword(password: string): Promise<string> {
-    const hashedPassword = await bcrypt.hash(password, this.saltRounds);
-    return hashedPassword;
+    const password_hash = await bcrypt.hash(password, this.saltRounds);
+    return password_hash;
   }
 
   async sendEmail(mailOptions: {
@@ -58,7 +59,7 @@ export class UsersService {
     const SQL = `
       SELECT 
         uuid,
-        password
+        password_hash
       FROM 
         users
       WHERE 
@@ -70,7 +71,8 @@ export class UsersService {
 
   async create(body: CreateUserRequestDto): Promise<void> {
     const password = this.generatePassword();
-    const hashedPassword = await this.generateHashPassword(password);
+    console.log('password', password);
+    const password_hash = await this.generateHashPassword(password);
     const uuid = await this.uuidService.generate();
     await this.uniqueFieldCheckerService.check({
       tableName: 'users',
@@ -96,71 +98,81 @@ export class UsersService {
     const SQL = `
       INSERT INTO 
           users
-          (uuid, name, lastName, email, cpf, accessTypeId, dateOfBirth, password)
+          (uuid, name, last_name, email, cpf, access_type_id, date_of_birth, password_hash)
       VALUES 
           (?, ?, ?, ?, ?, ?, ?, ?)`;
 
     return await this.databaseService.query(SQL, [
       uuid,
       body.name,
-      body.lastName,
+      body.last_name,
       body.email,
       body.cpf,
-      body.accessTypeId,
-      body.dateOfBirth,
-      hashedPassword,
+      body.access_type_id,
+      body.date_of_birth,
+      password_hash,
     ]);
   }
 
   async find(query: FindUsersRequestDto): Promise<FindUsersResponseDto[]> {
     const where = [];
     const queryParams = [];
-    const itemsPerPage = Number(query.itemsPerPage) || 10;
-    const pageNumber = Number(query.page) || 1;
-    const offset = (pageNumber - 1) * itemsPerPage;
+
+    const {
+      uuid,
+      name,
+      cpf,
+      email,
+      accessTypeId,
+      active,
+      sortField,
+      sortDirection,
+      page,
+      itemsPerPage,
+    } = new FindUsersQueryModel(query);
 
     let SQL = `
     SELECT 
       uuid,
       name,
-      lastName,
+      last_name,
       email,
-      accessTypeId,
-      dateOfBirth,
-      createdAt,
-      updatedAt,
+      access_type_id,
+      date_of_birth,
+      created_at,
+      updated_at,
       active
     FROM 
       users
     WHERE 1=1
-    `;
+  `;
 
-    if (query.uuid) {
+    if (uuid) {
       where.push(`uuid = ?`);
-      queryParams.push(query.uuid);
+      queryParams.push(uuid);
     }
 
-    if (query.name) {
+    if (name) {
       where.push(`name LIKE ?`);
-      queryParams.push(`%${query.name}%`);
+      queryParams.push(`%${name}%`);
     }
 
-    if (query.cpf) {
+    if (cpf) {
       where.push(`cpf = ?`);
-      queryParams.push(query.cpf);
+      queryParams.push(cpf);
     }
 
-    if (query.email) {
+    if (email) {
       where.push(`email = ?`);
-      queryParams.push(query.email);
+      queryParams.push(email);
     }
 
-    if (query.accessTypeId) {
-      where.push(`accessTypeId = ?`);
-      queryParams.push(query.accessTypeId);
+    if (accessTypeId) {
+      where.push(`access_type_id = ?`);
+      queryParams.push(accessTypeId);
     }
 
-    if (query.active && query.active === '0') {
+    if (Number(active) && Number(active) === 0) {
       where.push(`active = 0`);
     }
 
@@ -168,15 +180,17 @@ export class UsersService {
       SQL += ' AND ' + where.join(' AND ');
     }
 
-    if (query.sortField && query.sortDirection) {
-      SQL += ` ORDER BY ${query.sortField} ${query.sortDirection}`;
+    if (sortField && sortDirection) {
+      SQL += ` ORDER BY ${sortField} ${sortDirection}`;
     } else {
-      SQL += ' ORDER BY CreatedAt DESC';
+      SQL += ' ORDER BY created_at DESC';
     }
 
-    SQL += ` LIMIT ${offset}, ${itemsPerPage}`;
+    SQL += ` LIMIT ${(page - 1) * itemsPerPage}, ${itemsPerPage}`;
 
-    return await this.databaseService.query(SQL, queryParams);
+    const result = await this.databaseService.query(SQL, queryParams);
+    if (result.length === 0) throw new NotFoundException('No users found');
+    return result;
   }
 
   async edit(body: UpdateUserRequestDto): Promise<void> {
@@ -224,6 +238,9 @@ export class UsersService {
       WHERE 
         uuid = ?
       LIMIT 1 `;
-    return await this.databaseService.query(SQL, [uuid]);
+    const result = await this.databaseService.query(SQL, [uuid]);
+    if (result.affectedRows === 0) {
+      throw new NotFoundException('User not removed');
+    }
   }
 }

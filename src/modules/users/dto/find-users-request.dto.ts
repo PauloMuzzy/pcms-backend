@@ -35,7 +35,7 @@ export class FindUsersRequestDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsNumberString()
-  accessTypeId?: string;
+  access_type_id?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -46,14 +46,14 @@ export class FindUsersRequestDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  @IsIn(['name', 'dateOfBirth', 'createdAt'])
-  sortField?: string;
+  @IsIn(['name', 'date_of_birth', 'created_at'])
+  sort_field?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   @IsIn(['ASC', 'DESC'])
-  sortDirection?: string;
+  sort_direction?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -64,5 +64,5 @@ export class FindUsersRequestDto {
   @IsOptional()
   @IsNumberString()
   @IsIn(['10', '20', '50'])
-  itemsPerPage?: '10' | '20' | '50';
+  items_per_page?: '10' | '20' | '50';
 }

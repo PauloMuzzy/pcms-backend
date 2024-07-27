@@ -39,8 +39,10 @@ export class LoggerService {
       params.line || null,
     ];
 
+    console.log('Saving log:', values);
+
     try {
-      await this.databaseService.query(query, values);
+      // await this.databaseService.query(query, values);
     } catch (error) {
       console.error('Error saving log:', error);
     }

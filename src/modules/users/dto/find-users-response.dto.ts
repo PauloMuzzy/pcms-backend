@@ -8,26 +8,20 @@ export class FindUsersResponseDto {
   name: string;
 
   @ApiProperty()
-  lastName: string;
-
-  @ApiProperty()
-  cpf: string;
+  last_name: string;
 
   @ApiProperty()
   email: string;
 
   @ApiProperty()
-  accessTypeId: number;
+  access_type_id: number;
 
   @ApiProperty()
-  dateOfBirth: string;
+  date_of_birth: string;
 
   @ApiProperty()
-  createdAt?: Date;
+  created_at: string;
 
   @ApiProperty()
-  updatedAt?: Date;
-
-  @ApiProperty()
-  active: string;
+  active: number;
 }

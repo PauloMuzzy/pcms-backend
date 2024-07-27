@@ -26,7 +26,7 @@ export class UpdateUserRequestDto {
   @IsOptional()
   @IsString()
   @Length(1, 100)
-  lastName?: string;
+  last_name?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -42,13 +42,13 @@ export class UpdateUserRequestDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsNumber()
-  accessTypeId?: number;
+  access_type_id?: number;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   @Length(1, 100)
-  dateOfBirth?: string;
+  date_of_birth?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()

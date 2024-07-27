@@ -24,7 +24,7 @@ export class AuthService {
       throw new BadRequestException('Usuário ou Senha Inválidos');
     }
 
-    if (await bcrypt.compare(body.password, user.password)) {
+    if (await bcrypt.compare(body.password, user.password_hash)) {
       return {
         access_token: this.jwtService.sign(
           { id: user.uuid },
