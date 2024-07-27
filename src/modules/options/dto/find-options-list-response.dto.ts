@@ -5,5 +5,5 @@ export class FindOptionsListResponseDto {
   id: number;
 
   @ApiProperty()
-  name: string;
+  description: string;
 }

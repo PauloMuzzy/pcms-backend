@@ -4,5 +4,5 @@ import { IsString } from 'class-validator';
 export class FindOptionsListRequestDto {
   @ApiProperty()
   @IsString()
-  name: string;
+  description: string;
 }

@@ -4,7 +4,7 @@ import { FindOptionsListResponseDto } from 'src/modules/options/dto/find-options
 export const FIND_OPTIONS_LIST_SWAGGER_DOC = [
   ApiOperation({ summary: 'Find options list by name' }),
   ApiParam({
-    name: 'name',
+    name: 'description',
     description: 'Name of the options list to retrieve',
   }),
   ApiOkResponse({

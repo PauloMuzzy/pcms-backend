@@ -16,10 +16,10 @@ export class OptionsController {
   @UseGuards(JwtAuthGuard)
   @UsePipes(new CustomRequestValidatorPipe(FindOptionsListRequestDto))
   @SwaggerRoute(FIND_OPTIONS_LIST_SWAGGER_DOC)
-  @Get(':name')
-  async findOptionsList(
-    @Param('name') param: FindOptionsListRequestDto,
+  @Get(':description')
+  async find(
+    @Param('description') param: FindOptionsListRequestDto,
   ): Promise<FindOptionsListResponseDto[]> {
-    return await this.optionsService.findOptionsList(param.name);
+    return await this.optionsService.find(param.description);
   }
 }

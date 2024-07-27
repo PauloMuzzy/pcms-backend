@@ -6,9 +6,7 @@ import { FindOptionsListResponseDto } from 'src/modules/options/dto/find-options
 export class OptionsService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  async findOptionsList(
-    optionName: string,
-  ): Promise<FindOptionsListResponseDto[]> {
+  async find(optionName: string): Promise<FindOptionsListResponseDto[]> {
     let tableName = '';
 
     switch (optionName) {
@@ -27,7 +25,7 @@ export class OptionsService {
     const options = await this.databaseService.query(query);
     return options.map((option: FindOptionsListResponseDto) => ({
       id: option.id,
-      name: option.name,
+      description: option.description,
     }));
   }
 }
