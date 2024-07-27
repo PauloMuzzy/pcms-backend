@@ -5,9 +5,10 @@ import { UniqueFieldCheckerService } from 'src/common/modules/unique-field-check
 import { UniqueRegisterCheckerService } from 'src/common/modules/unique-register-checker/unique-register-checker.service';
 import { UuidService } from 'src/common/modules/uuid/uuid.service';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
-import { FindPatientRequestDto } from 'src/modules/patients/dto/find-patients-request.dto';
+import { FindPatientsRequestDto } from 'src/modules/patients/dto/find-patients-request.dto';
 import { FindPatientsResponseDto } from 'src/modules/patients/dto/find-patients-response.dto';
 import { UpdatePatientRequestDto } from 'src/modules/patients/dto/update-patient-request.dto';
+import { FindPatientsQueryModel } from 'src/modules/patients/model/find-patients.model';
 
 @Injectable()
 export class PatientsService {
@@ -36,84 +37,97 @@ export class PatientsService {
           (
             uuid,
             name, 
-            lastname, 
+            last_name, 
             cpf, 
             email, 
-            dateOfBirth, 
-            professionId, 
+            date_of_birth, 
+            profession_id, 
             phone, 
-            emergencyContactName, 
-            emergencyContactPhone, 
-            emergencyContactRelationshipId, 
-            genderId
+            emergency_contact_name, 
+            emergency_contact_phone, 
+            emergency_contact_relationship_id, 
+            gender_id
           )
       VALUES
           (
             ?,?,?,?,?,?,?,?,?,?,?,?
           )`;
 
-    await this.databaseService.query(SQL, [
+    const result = await this.databaseService.query(SQL, [
       uuid,
       body.name,
-      body.lastName,
+      body.last_name,
       body.cpf,
       body.email,
-      formatISODateToYYYYMMDD(body.dateOfBirth),
-      body.profession,
+      formatISODateToYYYYMMDD(body.date_of_birth),
+      body.profession_id,
       body.phone,
-      body.emergencyContactName,
-      body.emergencyContactPhone,
-      body.emergencyContactRelationship,
-      body.gender,
+      body.emergency_contact_name,
+      body.emergency_contact_phone,
+      body.emergency_contact_relationship_id,
+      body.gender_id,
     ]);
+    if (result.affectedRows === 0)
+      throw new NotFoundException('Patient not created');
   }
 
-  async find(query: FindPatientRequestDto): Promise<FindPatientsResponseDto[]> {
+  async find(
+    query: FindPatientsRequestDto,
+  ): Promise<FindPatientsResponseDto[]> {
     const where = [];
     const queryParams = [];
-    const itemsPerPage = Number(query.itemsPerPage) || 10;
-    const pageNumber = Number(query.page) || 1;
-    const offset = (pageNumber - 1) * itemsPerPage;
+
+    const {
+      uuid,
+      name,
+      cpf,
+      email,
+      active,
+      sortField,
+      sortDirection,
+      page,
+      itemsPerPage,
+    } = new FindPatientsQueryModel(query);
 
     let SQL = `
-    SELECT 
-        uuid,
-        name,
-        lastName,
-        email,
-        dateOfBirth,
-        phone,
-        emergencyContactName,
-        emergencyContactPhone,
-        active,
-        professionId,
-        genderId,
-        emergencyContactRelationshipId
-    FROM patients 
-    WHERE 1=1
+      SELECT 
+          uuid,
+          name,
+          last_name,
+          email,
+          date_of_birth,
+          phone,
+          emergency_contact_name,
+          emergency_contact_phone,
+          active,
+          profession_id,
+          gender_id,
+          emergency_contact_relationship_id
+      FROM patients 
+      WHERE 1=1
     `;
 
-    if (query.uuid) {
+    if (uuid) {
       where.push(`uuid = ?`);
       queryParams.push(query.uuid);
     }
 
-    if (query.name) {
+    if (name) {
       where.push(`name LIKE ?`);
-      queryParams.push(`%${query.name}%`);
+      queryParams.push(`%${name}%`);
     }
 
-    if (query.cpf) {
+    if (cpf) {
       where.push(`cpf = ?`);
-      queryParams.push(query.cpf);
+      queryParams.push(cpf);
     }
 
-    if (query.email) {
+    if (email) {
       where.push(`email = ?`);
-      queryParams.push(query.email);
+      queryParams.push(email);
     }
 
-    if (query.active && query.active === '0') {
+    if (active && active === 0) {
       where.push(`active = 0`);
     }
 
@@ -121,16 +135,16 @@ export class PatientsService {
       SQL += ' AND ' + where.join(' AND ');
     }
 
-    if (query.sortField && query.sortDirection) {
-      SQL += ` ORDER BY ${query.sortField} ${query.sortDirection}`;
+    if (sortField && sortDirection) {
+      SQL += ` ORDER BY ${sortField} ${sortDirection}`;
     } else {
-      SQL += ' ORDER BY CreatedAt DESC';
+      SQL += ' ORDER BY created_at DESC';
     }
 
-    SQL += ` LIMIT ${offset}, ${itemsPerPage}`;
+    SQL += ` LIMIT ${(page - 1) * itemsPerPage}, ${itemsPerPage}`;
 
     const result = await this.databaseService.query(SQL, queryParams);
-    if (result.length === 0) throw new NotFoundException();
+    if (result.length === 0) throw new NotFoundException('No patients found');
     return result;
   }
 

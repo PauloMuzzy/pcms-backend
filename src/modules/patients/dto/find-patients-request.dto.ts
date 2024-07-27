@@ -9,7 +9,7 @@ import {
   Length,
 } from 'class-validator';
 
-export class FindPatientRequestDto {
+export class FindPatientsRequestDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsUUID('4')
@@ -41,14 +41,14 @@ export class FindPatientRequestDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
-  @IsIn(['name', 'dateOfBirth', 'createdAt'])
-  sortField?: string;
+  @IsIn(['name', 'date_of_birth', 'created_at'])
+  sort_field?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
   @IsIn(['ASC', 'DESC'])
-  sortDirection?: string;
+  sort_direction?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -59,5 +59,5 @@ export class FindPatientRequestDto {
   @IsOptional()
   @IsNumberString()
   @IsIn(['10', '20', '50'])
-  itemsPerPage?: string;
+  items_per_page?: string;
 }

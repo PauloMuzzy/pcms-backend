@@ -20,7 +20,7 @@ export class CreatePatientRequestDto {
   @IsNotEmpty()
   @IsString()
   @Length(1, 100)
-  lastName: string;
+  last_name: string;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -36,17 +36,17 @@ export class CreatePatientRequestDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsDateString()
-  dateOfBirth: string;
+  date_of_birth: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
-  gender: number;
+  gender_id: number;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
-  profession: number;
+  profession_id: number;
 
   @ApiProperty()
   @IsNotEmpty()
@@ -58,18 +58,18 @@ export class CreatePatientRequestDto {
   @IsNotEmpty()
   @IsString()
   @Length(1, 100)
-  emergencyContactName: string;
+  emergency_contact_name: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsNumberString()
   @Length(11, 11)
-  emergencyContactPhone: string;
+  emergency_contact_phone: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsNumber()
-  emergencyContactRelationship: number;
+  emergency_contact_relationship_id: number;
 
   @ApiProperty()
   @IsNotEmpty()

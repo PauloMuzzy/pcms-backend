@@ -9,7 +9,7 @@ import { CreateUserRequestDto } from 'src/modules/users/dto/create-user-request.
 import { FindUsersRequestDto } from 'src/modules/users/dto/find-users-request.dto';
 import { FindUsersResponseDto } from 'src/modules/users/dto/find-users-response.dto';
 import { UpdateUserRequestDto } from 'src/modules/users/dto/update-user-request.dto';
-import { FindUsersQueryModel } from 'src/modules/users/model/find-user-query.model';
+import { FindUsersQueryModel } from 'src/modules/users/model/find-users-query.model';
 
 @Injectable()
 export class UsersService {
@@ -71,7 +71,6 @@ export class UsersService {
 
   async create(body: CreateUserRequestDto): Promise<void> {
     const password = this.generatePassword();
-    console.log('password', password);
     const password_hash = await this.generateHashPassword(password);
     const uuid = await this.uuidService.generate();
     await this.uniqueFieldCheckerService.check({

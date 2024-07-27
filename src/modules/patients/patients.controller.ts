@@ -24,7 +24,7 @@ import {
 } from 'src/modules/patients/documentation/swagger-decorators';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
 import { DeletePatientRequestDto } from 'src/modules/patients/dto/delete-patient-request.dto';
-import { FindPatientRequestDto } from 'src/modules/patients/dto/find-patients-request.dto';
+import { FindPatientsRequestDto } from 'src/modules/patients/dto/find-patients-request.dto';
 import { UpdatePatientRequestDto } from 'src/modules/patients/dto/update-patient-request.dto';
 import { PatientsService } from 'src/modules/patients/patients.service';
 
@@ -43,10 +43,10 @@ export class PatientsController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @UsePipes(new CustomRequestValidatorPipe(FindPatientRequestDto))
+  @UsePipes(new CustomRequestValidatorPipe(FindPatientsRequestDto))
   @SwaggerRoute(FIND_PATIENTS_SWAGGER_DOC)
   @Get()
-  async find(@Query() query: FindPatientRequestDto) {
+  async find(@Query() query: FindPatientsRequestDto) {
     return this.patientsService.find(query);
   }
 
