@@ -8,7 +8,7 @@ import {
   IsString,
   Length,
 } from 'class-validator';
-export class UpdatePatientRequestDto {
+export class EditPatientRequestDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsUUID } from 'class-validator';
 
-export class DeletePatientRequestDto {
+export class RemovePatientRequestDto {
   @ApiProperty()
   @IsUUID('4')
   @IsNotEmpty()

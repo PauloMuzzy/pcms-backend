@@ -23,10 +23,10 @@ import {
   REMOVE_USER_SWAGGER_DOC,
 } from 'src/modules/users/documentation/swagger-decorators';
 import { CreateUserRequestDto } from 'src/modules/users/dto/create-user-request.dto';
-import { DeleteUserRequestDto } from 'src/modules/users/dto/delete-user-request.dto';
+import { EditUserRequestDto } from 'src/modules/users/dto/edit-user-request.dto';
 import { FindUsersRequestDto } from 'src/modules/users/dto/find-users-request.dto';
 import { FindUsersResponseDto } from 'src/modules/users/dto/find-users-response.dto';
-import { UpdateUserRequestDto } from 'src/modules/users/dto/update-user-request.dto';
+import { RemoveUserRequestDto } from 'src/modules/users/dto/remove-user-request.dto';
 import { UsersService } from 'src/modules/users/users.service';
 
 @ApiTags('Users')
@@ -54,18 +54,18 @@ export class UsersController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @UsePipes(new CustomRequestValidatorPipe(UpdateUserRequestDto))
+  @UsePipes(new CustomRequestValidatorPipe(EditUserRequestDto))
   @SwaggerRoute(EDIT_USER_SWAGGER_DOC)
   @Patch()
-  async edit(@Body() body: UpdateUserRequestDto) {
+  async edit(@Body() body: EditUserRequestDto) {
     await this.usersService.edit(body);
   }
 
   @UseGuards(JwtAuthGuard)
-  @UsePipes(new CustomRequestValidatorPipe(DeleteUserRequestDto))
+  @UsePipes(new CustomRequestValidatorPipe(RemoveUserRequestDto))
   @SwaggerRoute(REMOVE_USER_SWAGGER_DOC)
   @Delete(':uuid')
-  async remove(@Param('uuid') param: DeleteUserRequestDto) {
-    await this.usersService.remove(param.uuid);
+  async remove(@Param('uuid') param: RemoveUserRequestDto) {
+    await this.usersService.remove(param);
   }
 }

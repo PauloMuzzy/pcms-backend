@@ -10,7 +10,7 @@ import {
   Length,
 } from 'class-validator';
 
-export class UpdateUserRequestDto {
+export class EditUserRequestDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsUUID('4')

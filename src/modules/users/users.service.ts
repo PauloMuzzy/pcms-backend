@@ -6,10 +6,10 @@ import { UniqueFieldCheckerService } from 'src/common/modules/unique-field-check
 import { UniqueRegisterCheckerService } from 'src/common/modules/unique-register-checker/unique-register-checker.service';
 import { UuidService } from 'src/common/modules/uuid/uuid.service';
 import { CreateUserRequestDto } from 'src/modules/users/dto/create-user-request.dto';
+import { EditUserRequestDto } from 'src/modules/users/dto/edit-user-request.dto';
 import { FindUsersRequestDto } from 'src/modules/users/dto/find-users-request.dto';
 import { FindUsersResponseDto } from 'src/modules/users/dto/find-users-response.dto';
-import { UpdateUserRequestDto } from 'src/modules/users/dto/update-user-request.dto';
-import { FindUsersQueryModel } from 'src/modules/users/model/find-users-query.model';
+import { RemoveUserRequestDto } from 'src/modules/users/dto/remove-user-request.dto';
 
 @Injectable()
 export class UsersService {
@@ -70,14 +70,15 @@ export class UsersService {
   }
 
   async create(body: CreateUserRequestDto): Promise<void> {
+    const { cpf, email } = body;
     const password = this.generatePassword();
     const password_hash = await this.generateHashPassword(password);
     const uuid = await this.uuidService.generate();
     await this.uniqueFieldCheckerService.check({
       tableName: 'users',
       fields: {
-        cpf: body.cpf,
-        email: body.email,
+        cpf,
+        email,
       },
     });
 
@@ -103,32 +104,28 @@ export class UsersService {
 
     return await this.databaseService.query(SQL, [
       uuid,
-      body.name,
-      body.last_name,
-      body.email,
-      body.cpf,
-      body.access_type_id,
-      body.date_of_birth,
+      ...Object.values(body),
       password_hash,
     ]);
   }
 
   async find(query: FindUsersRequestDto): Promise<FindUsersResponseDto[]> {
-    const where = [];
-    const queryParams = [];
-
     const {
       uuid,
       name,
       cpf,
       email,
-      accessTypeId,
+      access_type_id,
       active,
-      sortField,
-      sortDirection,
+      sort_field,
+      sort_direction,
       page,
-      itemsPerPage,
-    } = new FindUsersQueryModel(query);
+      items_per_page,
+    } = query;
+    const where = [];
+    const queryParams = [];
+    const offset = (Number(page) - 1) * Number(items_per_page) || 0;
+    const limit = Number(items_per_page) || 10;
 
     let SQL = `
     SELECT 
@@ -166,9 +163,9 @@ export class UsersService {
       queryParams.push(email);
     }
 
-    if (accessTypeId) {
+    if (access_type_id) {
       where.push(`access_type_id = ?`);
-      queryParams.push(accessTypeId);
+      queryParams.push(access_type_id);
     }
 
     if (Number(active) && Number(active) === 0) {
@@ -179,28 +176,29 @@ export class UsersService {
       SQL += ' AND ' + where.join(' AND ');
     }
 
-    if (sortField && sortDirection) {
-      SQL += ` ORDER BY ${sortField} ${sortDirection}`;
+    if (sort_field && sort_direction) {
+      SQL += ` ORDER BY ${sort_field} ${sort_direction}`;
     } else {
       SQL += ' ORDER BY created_at DESC';
     }
 
-    SQL += ` LIMIT ${(page - 1) * itemsPerPage}, ${itemsPerPage}`;
+    SQL += ` LIMIT ${offset}, ${limit}`;
 
     const result = await this.databaseService.query(SQL, queryParams);
     if (result.length === 0) throw new NotFoundException('No users found');
     return result;
   }
 
-  async edit(body: UpdateUserRequestDto): Promise<void> {
-    await this.uniqueRegisterCheckerService.check('users', body.uuid);
+  async edit(body: EditUserRequestDto): Promise<void> {
+    const { uuid, cpf, email } = body;
+    await this.uniqueRegisterCheckerService.check('users', uuid);
     await this.uniqueFieldCheckerService.check({
       tableName: 'users',
       fields: {
-        cpf: body.cpf,
-        email: body.email,
+        cpf,
+        email,
       },
-      uuid: body.uuid,
+      uuid,
     });
 
     const updates = [];
@@ -213,7 +211,7 @@ export class UsersService {
       }
     }
 
-    params.push(body.uuid);
+    params.push(uuid);
 
     const SQL = `
       UPDATE users
@@ -229,7 +227,8 @@ export class UsersService {
     }
   }
 
-  async remove(uuid: string): Promise<void> {
+  async remove(param: RemoveUserRequestDto): Promise<void> {
+    const { uuid } = param;
     await this.uniqueRegisterCheckerService.check('users', uuid);
     const SQL = `
       DELETE FROM 
