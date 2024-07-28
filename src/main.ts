@@ -19,6 +19,7 @@ async function bootstrap() {
     .addTag('Auth')
     .addTag('Users')
     .addTag('Patients')
+    .addTag('Demands')
     .addTag('Options')
     .addTag('CronJobs')
     .build();

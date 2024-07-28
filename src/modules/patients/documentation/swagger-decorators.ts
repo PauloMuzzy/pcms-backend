@@ -10,7 +10,6 @@ import {
 } from '@nestjs/swagger';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
 import { FindPatientsResponseDto } from 'src/modules/patients/dto/find-patients-response.dto';
-import { UpdatePatientRequestDto } from 'src/modules/patients/dto/update-patient-request.dto';
 
 export const CREATE_PATIENT_SWAGGER_DOC = [
   ApiOperation({ summary: 'Create a new patient record' }),
@@ -38,7 +37,7 @@ export const FIND_PATIENTS_SWAGGER_DOC = [
 export const EDIT_PATIENT_SWAGGER_DOC = [
   ApiOperation({ summary: 'Update an existing patient record' }),
   ApiBody({
-    type: UpdatePatientRequestDto,
+    type: CreatePatientRequestDto,
     description: 'Details of the patient to be updated',
   }),
   ApiOkResponse({ description: 'Patient successfully updated' }),
