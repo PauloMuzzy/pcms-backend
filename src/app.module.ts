@@ -8,6 +8,7 @@ import { mailerConfig } from 'src/config/mailer/mailer.config';
 import { AditionalInformationsModule } from 'src/modules/aditional-informations/aditional-informations.module';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { CronJobsModule } from 'src/modules/cron-jobs/cron-jobs.module';
+import { DemandsModule } from 'src/modules/demands/demands.module';
 import { OptionsModule } from 'src/modules/options/options.module';
 import { PatientsModule } from 'src/modules/patients/patients.module';
 import { SessionReportsModule } from 'src/modules/session-reports/session-reports.module';
@@ -28,6 +29,7 @@ require('dotenv').config();
     UuidModule,
     LoggerModule,
     CronJobsModule,
+    DemandsModule,
   ],
 })
 export class AppModule {}

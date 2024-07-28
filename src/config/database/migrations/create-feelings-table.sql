@@ -1,0 +1,4 @@
+CREATE TABLE feelings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    description VARCHAR(50) NOT NULL UNIQUE
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
