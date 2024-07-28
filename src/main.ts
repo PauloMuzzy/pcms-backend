@@ -17,7 +17,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addBearerAuth()
     .addTag('Auth')
-    .addTag('Users')
+    .addTag('Psychologists')
     .addTag('Patients')
     .addTag('Demands')
     .addTag('Options')

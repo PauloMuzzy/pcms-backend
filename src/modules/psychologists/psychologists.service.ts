@@ -5,14 +5,14 @@ import { DatabaseService } from 'src/common/modules/database/database.service';
 import { UniqueFieldCheckerService } from 'src/common/modules/unique-field-checker/unique-field-checker.service';
 import { UniqueRegisterCheckerService } from 'src/common/modules/unique-register-checker/unique-register-checker.service';
 import { UuidService } from 'src/common/modules/uuid/uuid.service';
-import { CreateUserRequestDto } from 'src/modules/users/dto/create-user-request.dto';
-import { EditUserRequestDto } from 'src/modules/users/dto/edit-user-request.dto';
-import { FindUsersRequestDto } from 'src/modules/users/dto/find-users-request.dto';
-import { FindUsersResponseDto } from 'src/modules/users/dto/find-users-response.dto';
-import { RemoveUserRequestDto } from 'src/modules/users/dto/remove-user-request.dto';
+import { CreatePsychologistRequestDto } from 'src/modules/psychologists/dto/create-psychologist-request.dto';
+import { EditPsychologistRequestDto } from 'src/modules/psychologists/dto/edit-psychologist-request.dto';
+import { FindPsychologistsRequestDto } from 'src/modules/psychologists/dto/find-psychologists-request.dto';
+import { FindPsychologistsResponseDto } from 'src/modules/psychologists/dto/find-psychologists-response.dto';
+import { RemovePsychologistRequestDto } from 'src/modules/psychologists/dto/remove-psychologist-request.dto';
 
 @Injectable()
-export class UsersService {
+export class PsychologistsService {
   constructor(
     private readonly uniqueFieldCheckerService: UniqueFieldCheckerService,
     private readonly uniqueRegisterCheckerService: UniqueRegisterCheckerService,
@@ -61,7 +61,7 @@ export class UsersService {
         uuid,
         password_hash
       FROM 
-        users
+        psychologists
       WHERE 
         email = ?`;
 
@@ -69,13 +69,13 @@ export class UsersService {
     return result[0];
   }
 
-  async create(body: CreateUserRequestDto): Promise<void> {
+  async create(body: CreatePsychologistRequestDto): Promise<void> {
     const { cpf, email } = body;
     const password = this.generatePassword();
     const password_hash = await this.generateHashPassword(password);
     const uuid = await this.uuidService.generate();
     await this.uniqueFieldCheckerService.check({
-      tableName: 'users',
+      tableName: 'psychologists',
       fields: {
         cpf,
         email,
@@ -97,7 +97,7 @@ export class UsersService {
 
     const SQL = `
       INSERT INTO 
-          users
+          psychologists
           (uuid, name, last_name, email, cpf, access_type_id, date_of_birth, password_hash)
       VALUES 
           (?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -109,7 +109,9 @@ export class UsersService {
     ]);
   }
 
-  async find(query: FindUsersRequestDto): Promise<FindUsersResponseDto[]> {
+  async find(
+    query: FindPsychologistsRequestDto,
+  ): Promise<FindPsychologistsResponseDto[]> {
     const {
       uuid,
       name,
@@ -139,7 +141,7 @@ export class UsersService {
       updated_at,
       active
     FROM 
-      users
+      psychologists
     WHERE 1=1
   `;
 
@@ -185,15 +187,16 @@ export class UsersService {
     SQL += ` LIMIT ${offset}, ${limit}`;
 
     const result = await this.databaseService.query(SQL, queryParams);
-    if (result.length === 0) throw new NotFoundException('No users found');
+    if (result.length === 0)
+      throw new NotFoundException('No psychologists found');
     return result;
   }
 
-  async edit(body: EditUserRequestDto): Promise<void> {
+  async edit(body: EditPsychologistRequestDto): Promise<void> {
     const { uuid, cpf, email } = body;
-    await this.uniqueRegisterCheckerService.check('users', uuid);
+    await this.uniqueRegisterCheckerService.check('psychologists', uuid);
     await this.uniqueFieldCheckerService.check({
-      tableName: 'users',
+      tableName: 'psychologists',
       fields: {
         cpf,
         email,
@@ -214,7 +217,7 @@ export class UsersService {
     params.push(uuid);
 
     const SQL = `
-      UPDATE users
+      UPDATE psychologists
       SET ${updates.join(', ')}
       WHERE uuid = ?
       LIMIT 1;
@@ -223,22 +226,22 @@ export class UsersService {
     const result = await this.databaseService.query(SQL, params);
 
     if (result.changedRows === 0) {
-      throw new NotFoundException('User not changed');
+      throw new NotFoundException('Psychologist not changed');
     }
   }
 
-  async remove(param: RemoveUserRequestDto): Promise<void> {
+  async remove(param: RemovePsychologistRequestDto): Promise<void> {
     const { uuid } = param;
-    await this.uniqueRegisterCheckerService.check('users', uuid);
+    await this.uniqueRegisterCheckerService.check('psychologists', uuid);
     const SQL = `
       DELETE FROM 
-        users
+        psychologists
       WHERE 
         uuid = ?
       LIMIT 1 `;
     const result = await this.databaseService.query(SQL, [uuid]);
     if (result.affectedRows === 0) {
-      throw new NotFoundException('User not removed');
+      throw new NotFoundException('Psychologist not removed');
     }
   }
 }

@@ -10,7 +10,7 @@ import {
   Length,
 } from 'class-validator';
 
-export class EditUserRequestDto {
+export class EditPsychologistRequestDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsUUID('4')

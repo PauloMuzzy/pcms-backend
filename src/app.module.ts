@@ -10,13 +10,13 @@ import { CronJobsModule } from 'src/modules/cron-jobs/cron-jobs.module';
 import { DemandsModule } from 'src/modules/demands/demands.module';
 import { OptionsModule } from 'src/modules/options/options.module';
 import { PatientsModule } from 'src/modules/patients/patients.module';
-import { UsersModule } from 'src/modules/users/users.module';
+import { PsychologistsModule } from 'src/modules/psychologists/psychologists.module';
 require('dotenv').config();
 
 @Module({
   imports: [
     MailerModule.forRoot(mailerConfig),
-    UsersModule,
+    PsychologistsModule,
     AuthModule,
     PatientsModule,
     OptionsModule,

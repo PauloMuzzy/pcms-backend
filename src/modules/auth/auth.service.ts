@@ -7,18 +7,18 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { LoginRequestDto } from 'src/modules/auth/dto/login-request.dto';
 import { LoginResponseDto } from 'src/modules/auth/dto/login-response.dto';
-import { UsersService } from 'src/modules/users/users.service';
+import { PsychologistsService } from 'src/modules/psychologists/psychologists.service';
 require('dotenv').config();
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly usersService: UsersService,
+    private readonly psychologistsService: PsychologistsService,
     private jwtService: JwtService,
   ) {}
 
   async validateUser(body: LoginRequestDto): Promise<LoginResponseDto> {
-    const user = await this.usersService.findCredentials(body.email);
+    const user = await this.psychologistsService.findCredentials(body.email);
 
     if (!user.password) {
       throw new BadRequestException('Usuário ou Senha Inválidos');

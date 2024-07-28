@@ -8,7 +8,7 @@ import {
   Length,
 } from 'class-validator';
 
-export class CreateUserRequestDto {
+export class CreatePsychologistRequestDto {
   @ApiProperty()
   @IsNotEmpty()
   @IsString()

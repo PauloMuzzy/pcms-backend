@@ -8,21 +8,21 @@ import { UuidModule } from 'src/common/modules/uuid/uuid.module';
 import { AuthController } from 'src/modules/auth/auth.controller';
 import { JwtStrategy } from 'src/modules/auth/jwt.strategy';
 import { LocalStrategy } from 'src/modules/auth/local.auth';
-import { UsersModule } from 'src/modules/users/users.module';
-import { UsersService } from 'src/modules/users/users.service';
+import { PsychologistsModule } from 'src/modules/psychologists/psychologists.module';
+import { PsychologistsService } from 'src/modules/psychologists/psychologists.service';
 import { AuthService } from './auth.service';
 
 @Module({
   imports: [
     PassportModule,
     JwtModule,
-    UsersModule,
+    PsychologistsModule,
     UuidModule,
     DatabaseModule,
     UniqueFieldCheckerModule,
     UniqueRegisterCheckerModule,
   ],
-  providers: [AuthService, UsersService, LocalStrategy, JwtStrategy],
+  providers: [AuthService, PsychologistsService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

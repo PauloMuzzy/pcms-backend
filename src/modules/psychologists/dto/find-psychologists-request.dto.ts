@@ -9,7 +9,7 @@ import {
   Length,
 } from 'class-validator';
 
-export class FindUsersRequestDto {
+export class FindPsychologistsRequestDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsUUID('4')

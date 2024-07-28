@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class FindUsersResponseDto {
+export class FindPsychologistsResponseDto {
   @ApiProperty()
   uuid?: string;
 
