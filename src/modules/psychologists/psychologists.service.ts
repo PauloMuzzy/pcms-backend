@@ -187,8 +187,7 @@ export class PsychologistsService {
     SQL += ` LIMIT ${offset}, ${limit}`;
 
     const result = await this.databaseService.query(SQL, queryParams);
-    if (result.length === 0)
-      throw new NotFoundException('No psychologists found');
+    if (result.length === 0) throw new NotFoundException();
     return result;
   }
 

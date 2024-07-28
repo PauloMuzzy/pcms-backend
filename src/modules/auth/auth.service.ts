@@ -20,7 +20,7 @@ export class AuthService {
   async validateUser(body: LoginRequestDto): Promise<LoginResponseDto> {
     const user = await this.psychologistsService.findCredentials(body.email);
 
-    if (!user.password) {
+    if (!user.password_hash) {
       throw new BadRequestException('Usuário ou Senha Inválidos');
     }
 

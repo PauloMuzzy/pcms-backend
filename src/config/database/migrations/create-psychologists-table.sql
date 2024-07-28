@@ -1,4 +1,4 @@
-CREATE TABLE users (
+CREATE TABLE psychologists (
     uuid CHAR(36) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,

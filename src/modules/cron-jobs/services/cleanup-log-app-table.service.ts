@@ -8,7 +8,7 @@ export class CleanupLogAppTableService {
   async clearLogs(): Promise<void> {
     const sql = 'DELETE FROM log_app';
     try {
-      await this.databaseService.query(sql);
+      //await this.databaseService.query(sql);
     } catch (error) {
       throw new InternalServerErrorException(error);
     }
