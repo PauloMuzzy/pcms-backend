@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'src/common/modules/database/database.service';
-import { UniqueFieldCheckerService } from 'src/common/modules/unique-field-checker/unique-field-checker.service';
-import { UniqueRegisterCheckerService } from 'src/common/modules/unique-register-checker/unique-register-checker.service';
+import { RecordAndDuplicationCheckerService } from 'src/common/modules/record-and-duplication-checker/record-and-duplication-checker.service';
 import { UuidService } from 'src/common/modules/uuid/uuid.service';
 import { CreatePatientRequestDto } from 'src/modules/patients/dto/create-patient-request.dto';
 import { EditPatientRequestDto } from 'src/modules/patients/dto/edit-patient-request.dto';
@@ -14,21 +13,33 @@ export class PatientsService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly uuidService: UuidService,
-    private readonly uniqueFieldCheckerService: UniqueFieldCheckerService,
-    private readonly uniqueRegisterCheckerService: UniqueRegisterCheckerService,
+    private readonly recordAndDuplicationCheckerService: RecordAndDuplicationCheckerService,
   ) {}
 
   async create(body: CreatePatientRequestDto): Promise<void> {
     const { cpf, email, phone } = body;
     const uuid = await this.uuidService.generate();
-    await this.uniqueFieldCheckerService.check({
-      tableName: 'patients',
-      fields: {
-        cpf,
-        email,
-        phone,
+
+    await this.recordAndDuplicationCheckerService.checkRecords([
+      {
+        tableName: 'patients',
+        fieldValue: cpf,
+        fieldName: 'cpf',
+        checkType: 'duplication',
       },
-    });
+      {
+        tableName: 'patients',
+        fieldValue: email,
+        fieldName: 'email',
+        checkType: 'duplication',
+      },
+      {
+        tableName: 'patients',
+        fieldValue: phone,
+        fieldName: 'phone',
+        checkType: 'duplication',
+      },
+    ]);
 
     const SQL = `
       INSERT INTO 
@@ -141,16 +152,33 @@ export class PatientsService {
 
   async edit(body: EditPatientRequestDto): Promise<void> {
     const { uuid, cpf, email, phone } = body;
-    await this.uniqueRegisterCheckerService.check('patients', uuid);
-    await this.uniqueFieldCheckerService.check({
-      tableName: 'patients',
-      fields: {
-        cpf,
-        email,
-        phone,
+
+    await this.recordAndDuplicationCheckerService.checkRecords([
+      {
+        tableName: 'patients',
+        fieldValue: uuid,
+        fieldName: 'uuid',
+        checkType: 'existence',
       },
-      uuid,
-    });
+      {
+        tableName: 'patients',
+        fieldValue: cpf,
+        fieldName: 'cpf',
+        checkType: 'duplication',
+      },
+      {
+        tableName: 'patients',
+        fieldValue: email,
+        fieldName: 'email',
+        checkType: 'duplication',
+      },
+      {
+        tableName: 'patients',
+        fieldValue: phone,
+        fieldName: 'phone',
+        checkType: 'duplication',
+      },
+    ]);
 
     const updates = [];
     const params = [];
@@ -180,7 +208,15 @@ export class PatientsService {
 
   async remove(param: RemovePatientRequestDto): Promise<void> {
     const { uuid } = param;
-    await this.uniqueRegisterCheckerService.check('patients', uuid);
+
+    await this.recordAndDuplicationCheckerService.checkRecords([
+      {
+        tableName: 'patients',
+        fieldValue: uuid,
+        fieldName: 'uuid',
+        checkType: 'existence',
+      },
+    ]);
 
     const SQL = `
       DELETE FROM patients WHERE uuid = ? LIMIT 1;

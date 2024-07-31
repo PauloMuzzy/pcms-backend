@@ -2,7 +2,7 @@ CREATE TABLE session_reports (
     uuid CHAR(36) PRIMARY KEY,
     patient_uuid CHAR(36) NOT NULL,
     demand_uuid CHAR(36) NOT NULL,
-    therapist_uuid CHAR(36) NOT NULL,
+    psychologist_uuid CHAR(36) NOT NULL,
     initial_patient_report TEXT,
     initial_feeling VARCHAR(255),
     initial_feeling_level TINYINT CHECK (initial_feeling_level BETWEEN 0 AND 10),
@@ -10,7 +10,7 @@ CREATE TABLE session_reports (
     session_start DATETIME NOT NULL,
     session_finish DATETIME,
     tags_ids VARCHAR(255),
-    therapist_observations TEXT,
+    psychologist_observations TEXT,
     final_feeling VARCHAR(255),
     final_feeling_level TINYINT CHECK (final_feeling_level BETWEEN 0 AND 10),
     next_steps TEXT,
@@ -18,8 +18,8 @@ CREATE TABLE session_reports (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (patient_uuid) REFERENCES patients(uuid),
     FOREIGN KEY (demand_uuid) REFERENCES demands(uuid),
-    FOREIGN KEY (therapist_uuid) REFERENCES therapists(uuid),
+    FOREIGN KEY (psychologist_uuid) REFERENCES psychologists(uuid),
     INDEX idx_patient_uuid (patient_uuid),
-    INDEX idx_therapist_uuid (therapist_uuid),
+    INDEX idx_psychologist_uuid (psychologist_uuid),
     INDEX idx_session_start (session_start)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

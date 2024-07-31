@@ -2,8 +2,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { DatabaseService } from 'src/common/modules/database/database.service';
-import { UniqueFieldCheckerService } from 'src/common/modules/unique-field-checker/unique-field-checker.service';
-import { UniqueRegisterCheckerService } from 'src/common/modules/unique-register-checker/unique-register-checker.service';
+import { RecordAndDuplicationCheckerService } from 'src/common/modules/record-and-duplication-checker/record-and-duplication-checker.service';
 import { UuidService } from 'src/common/modules/uuid/uuid.service';
 import { CreatePsychologistRequestDto } from 'src/modules/psychologists/dto/create-psychologist-request.dto';
 import { EditPsychologistRequestDto } from 'src/modules/psychologists/dto/edit-psychologist-request.dto';
@@ -14,11 +13,10 @@ import { RemovePsychologistRequestDto } from 'src/modules/psychologists/dto/remo
 @Injectable()
 export class PsychologistsService {
   constructor(
-    private readonly uniqueFieldCheckerService: UniqueFieldCheckerService,
-    private readonly uniqueRegisterCheckerService: UniqueRegisterCheckerService,
     private readonly databaseService: DatabaseService,
     private readonly uuidService: UuidService,
     private readonly mailerService: MailerService,
+    private readonly recordAndDuplicationCheckerService: RecordAndDuplicationCheckerService,
   ) {}
 
   private saltRounds = 10;
@@ -74,13 +72,27 @@ export class PsychologistsService {
     const password = this.generatePassword();
     const password_hash = await this.generateHashPassword(password);
     const uuid = await this.uuidService.generate();
-    await this.uniqueFieldCheckerService.check({
-      tableName: 'psychologists',
-      fields: {
-        cpf,
-        email,
+
+    await this.recordAndDuplicationCheckerService.checkRecords([
+      {
+        tableName: 'psychologists',
+        fieldValue: uuid,
+        fieldName: 'uuid',
+        checkType: 'duplication',
       },
-    });
+      {
+        tableName: 'psychologists',
+        fieldName: 'cpf',
+        fieldValue: cpf,
+        checkType: 'duplication',
+      },
+      {
+        tableName: 'psychologists',
+        fieldName: 'email',
+        fieldValue: email,
+        checkType: 'duplication',
+      },
+    ]);
 
     if (true) {
       try {
@@ -193,15 +205,27 @@ export class PsychologistsService {
 
   async edit(body: EditPsychologistRequestDto): Promise<void> {
     const { uuid, cpf, email } = body;
-    await this.uniqueRegisterCheckerService.check('psychologists', uuid);
-    await this.uniqueFieldCheckerService.check({
-      tableName: 'psychologists',
-      fields: {
-        cpf,
-        email,
+
+    await this.recordAndDuplicationCheckerService.checkRecords([
+      {
+        tableName: 'psychologists',
+        fieldValue: uuid,
+        fieldName: 'uuid',
+        checkType: 'existence',
       },
-      uuid,
-    });
+      {
+        tableName: 'psychologists',
+        fieldName: 'cpf',
+        fieldValue: cpf,
+        checkType: 'duplication',
+      },
+      {
+        tableName: 'psychologists',
+        fieldName: 'email',
+        fieldValue: email,
+        checkType: 'duplication',
+      },
+    ]);
 
     const updates = [];
     const params = [];
@@ -231,7 +255,16 @@ export class PsychologistsService {
 
   async remove(param: RemovePsychologistRequestDto): Promise<void> {
     const { uuid } = param;
-    await this.uniqueRegisterCheckerService.check('psychologists', uuid);
+
+    await this.recordAndDuplicationCheckerService.checkRecords([
+      {
+        tableName: 'psychologists',
+        fieldValue: uuid,
+        fieldName: 'uuid',
+        checkType: 'existence',
+      },
+    ]);
+
     const SQL = `
       DELETE FROM 
         psychologists

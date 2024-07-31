@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DatabaseService } from 'src/common/modules/database/database.service';
-import { UniqueRegisterCheckerService } from 'src/common/modules/unique-register-checker/unique-register-checker.service';
+import { RecordAndDuplicationCheckerService } from 'src/common/modules/record-and-duplication-checker/record-and-duplication-checker.service';
 import { UuidService } from 'src/common/modules/uuid/uuid.service';
 import { CreateDemandRequestDto } from 'src/modules/demands/dto/create-demand-request.dto';
 import { EditDemandRequestDto } from 'src/modules/demands/dto/edit-demand-request.dto';
@@ -13,11 +13,20 @@ export class DemandsService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly uuidService: UuidService,
-    private readonly uniqueRegisterCheckerService: UniqueRegisterCheckerService,
+    private readonly recordAndDuplicationCheckerService: RecordAndDuplicationCheckerService,
   ) {}
 
   async create(body: CreateDemandRequestDto): Promise<void> {
     const uuid = await this.uuidService.generate();
+
+    await this.recordAndDuplicationCheckerService.checkRecords([
+      {
+        tableName: 'demands',
+        fieldValue: uuid,
+        fieldName: 'uuid',
+        checkType: 'duplication',
+      },
+    ]);
 
     const SQL = `
       INSERT INTO demands (
@@ -121,7 +130,16 @@ export class DemandsService {
 
   async edit(body: EditDemandRequestDto): Promise<void> {
     const { uuid } = body;
-    await this.uniqueRegisterCheckerService.check('demands', uuid);
+
+    await this.recordAndDuplicationCheckerService.checkRecords([
+      {
+        tableName: 'demands',
+        fieldValue: uuid,
+        fieldName: 'uuid',
+        checkType: 'existence',
+      },
+    ]);
+
     const updates = [];
     const params = [];
 
@@ -150,7 +168,15 @@ export class DemandsService {
 
   async remove(param: RemovePatientRequestDto): Promise<void> {
     const { uuid } = param;
-    await this.uniqueRegisterCheckerService.check('demands', uuid);
+
+    await this.recordAndDuplicationCheckerService.checkRecords([
+      {
+        tableName: 'demands',
+        fieldValue: uuid,
+        fieldName: 'uuid',
+        checkType: 'existence',
+      },
+    ]);
 
     const SQL = `
       DELETE FROM demands WHERE uuid = ? LIMIT 1;

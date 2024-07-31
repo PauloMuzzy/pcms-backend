@@ -15,7 +15,6 @@ export class CustomRequestValidatorPipe<T extends object>
 
   async transform(value: any, metadata: ArgumentMetadata): Promise<T | any> {
     if (metadata.type === 'body' || metadata.type === 'query') {
-      // Handle 'body' and 'query'
       const dtoInstance = plainToClass(this.dto, value);
       const errors = await validate(dtoInstance);
 
@@ -31,7 +30,6 @@ export class CustomRequestValidatorPipe<T extends object>
     }
 
     if (metadata.type === 'param') {
-      // Handle 'param'
       const dtoInstance = plainToClass(this.dto, { [metadata.data]: value });
       const errors = await validate(dtoInstance);
 
