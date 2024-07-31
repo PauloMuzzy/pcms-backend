@@ -68,7 +68,7 @@ export class PsychologistsService {
   }
 
   async create(body: CreatePsychologistRequestDto): Promise<void> {
-    const { cpf, email } = body;
+    const { name, last_name, email, cpf, access_type_id, date_of_birth } = body;
     const password = this.generatePassword();
     const password_hash = await this.generateHashPassword(password);
     const uuid = await this.uuidService.generate();
@@ -76,20 +76,16 @@ export class PsychologistsService {
     await this.recordAndDuplicationCheckerService.checkRecords([
       {
         tableName: 'psychologists',
-        fieldValue: uuid,
-        fieldName: 'uuid',
-        checkType: 'duplication',
-      },
-      {
-        tableName: 'psychologists',
         fieldName: 'cpf',
         fieldValue: cpf,
+        fieldNameResponse: 'cpf',
         checkType: 'duplication',
       },
       {
         tableName: 'psychologists',
         fieldName: 'email',
         fieldValue: email,
+        fieldNameResponse: 'email',
         checkType: 'duplication',
       },
     ]);
@@ -116,7 +112,12 @@ export class PsychologistsService {
 
     return await this.databaseService.query(SQL, [
       uuid,
-      ...Object.values(body),
+      name,
+      last_name,
+      email,
+      cpf,
+      access_type_id,
+      date_of_birth,
       password_hash,
     ]);
   }
@@ -211,18 +212,21 @@ export class PsychologistsService {
         tableName: 'psychologists',
         fieldValue: uuid,
         fieldName: 'uuid',
+        fieldNameResponse: 'uuid',
         checkType: 'existence',
       },
       {
         tableName: 'psychologists',
         fieldName: 'cpf',
         fieldValue: cpf,
+        fieldNameResponse: 'cpf',
         checkType: 'duplication',
       },
       {
         tableName: 'psychologists',
         fieldName: 'email',
         fieldValue: email,
+        fieldNameResponse: 'email',
         checkType: 'duplication',
       },
     ]);
@@ -261,6 +265,7 @@ export class PsychologistsService {
         tableName: 'psychologists',
         fieldValue: uuid,
         fieldName: 'uuid',
+        fieldNameResponse: 'uuid',
         checkType: 'existence',
       },
     ]);

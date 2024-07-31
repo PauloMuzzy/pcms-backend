@@ -17,7 +17,20 @@ export class PatientsService {
   ) {}
 
   async create(body: CreatePatientRequestDto): Promise<void> {
-    const { cpf, email, phone } = body;
+    const {
+      active,
+      cpf,
+      date_of_birth,
+      email,
+      emergency_contact_name,
+      emergency_contact_phone,
+      emergency_contact_relationship_id,
+      gender_id,
+      last_name,
+      name,
+      phone,
+      profession_id,
+    } = body;
     const uuid = await this.uuidService.generate();
 
     await this.recordAndDuplicationCheckerService.checkRecords([
@@ -25,18 +38,21 @@ export class PatientsService {
         tableName: 'patients',
         fieldValue: cpf,
         fieldName: 'cpf',
+        fieldNameResponse: 'cpf',
         checkType: 'duplication',
       },
       {
         tableName: 'patients',
         fieldValue: email,
         fieldName: 'email',
+        fieldNameResponse: 'email',
         checkType: 'duplication',
       },
       {
         tableName: 'patients',
         fieldValue: phone,
         fieldName: 'phone',
+        fieldNameResponse: 'phone',
         checkType: 'duplication',
       },
     ]);
@@ -56,16 +72,28 @@ export class PatientsService {
             emergency_contact_name, 
             emergency_contact_phone, 
             emergency_contact_relationship_id, 
-            gender_id
+            gender_id,
+            active
           )
       VALUES
           (
-            ?,?,?,?,?,?,?,?,?,?,?,?
+            ?,?,?,?,?,?,?,?,?,?,?,?,?
           )`;
 
     const result = await this.databaseService.query(SQL, [
       uuid,
-      ...Object.values(body),
+      name,
+      last_name,
+      cpf,
+      email,
+      date_of_birth,
+      profession_id,
+      phone,
+      emergency_contact_name,
+      emergency_contact_phone,
+      emergency_contact_relationship_id,
+      gender_id,
+      active,
     ]);
 
     if (result.affectedRows === 0)
@@ -158,24 +186,28 @@ export class PatientsService {
         tableName: 'patients',
         fieldValue: uuid,
         fieldName: 'uuid',
+        fieldNameResponse: 'uuid',
         checkType: 'existence',
       },
       {
         tableName: 'patients',
         fieldValue: cpf,
         fieldName: 'cpf',
+        fieldNameResponse: 'cpf',
         checkType: 'duplication',
       },
       {
         tableName: 'patients',
         fieldValue: email,
         fieldName: 'email',
+        fieldNameResponse: 'email',
         checkType: 'duplication',
       },
       {
         tableName: 'patients',
         fieldValue: phone,
         fieldName: 'phone',
+        fieldNameResponse: 'phone',
         checkType: 'duplication',
       },
     ]);
@@ -214,6 +246,7 @@ export class PatientsService {
         tableName: 'patients',
         fieldValue: uuid,
         fieldName: 'uuid',
+        fieldNameResponse: 'uuid',
         checkType: 'existence',
       },
     ]);

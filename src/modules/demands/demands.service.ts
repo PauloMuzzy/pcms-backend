@@ -19,12 +19,32 @@ export class DemandsService {
   async create(body: CreateDemandRequestDto): Promise<void> {
     const uuid = await this.uuidService.generate();
 
+    const {
+      patient_uuid,
+      demand_description,
+      problem_history,
+      symptoms,
+      treatment_goals,
+      impact_on_life,
+      previous_attempts,
+      social_support,
+      aggravating_factors,
+      treatment_expectations,
+      motivation_for_change,
+      medication,
+      other_therapies,
+      additional_observations,
+      current_feeling_id,
+      feeling_intensity,
+    } = body;
+
     await this.recordAndDuplicationCheckerService.checkRecords([
       {
-        tableName: 'demands',
-        fieldValue: uuid,
+        tableName: 'patients',
+        fieldValue: patient_uuid,
         fieldName: 'uuid',
-        checkType: 'duplication',
+        fieldNameResponse: 'patient_uuid',
+        checkType: 'existence',
       },
     ]);
 
@@ -53,7 +73,22 @@ export class DemandsService {
 
     const result = await this.databaseService.query(SQL, [
       uuid,
-      ...Object.values(body),
+      patient_uuid,
+      demand_description,
+      problem_history,
+      symptoms,
+      treatment_goals,
+      impact_on_life,
+      previous_attempts,
+      social_support,
+      aggravating_factors,
+      treatment_expectations,
+      motivation_for_change,
+      medication,
+      other_therapies,
+      additional_observations,
+      current_feeling_id,
+      feeling_intensity,
     ]);
 
     if (result.affectedRows === 0) {
@@ -136,6 +171,7 @@ export class DemandsService {
         tableName: 'demands',
         fieldValue: uuid,
         fieldName: 'uuid',
+        fieldNameResponse: 'uuid',
         checkType: 'existence',
       },
     ]);
@@ -174,6 +210,7 @@ export class DemandsService {
         tableName: 'demands',
         fieldValue: uuid,
         fieldName: 'uuid',
+        fieldNameResponse: 'uuid',
         checkType: 'existence',
       },
     ]);

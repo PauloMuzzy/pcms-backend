@@ -17,26 +17,44 @@ export class SessionReportsService {
   ) {}
 
   async create(body: CreateSessionReportRequestDto): Promise<void> {
-    const { patient_uuid, demand_uuid, psychologist_uuid } = body;
+    const {
+      patient_uuid,
+      demand_uuid,
+      psychologist_uuid,
+      initial_patient_report,
+      initial_feeling,
+      initial_feeling_level,
+      session_notes,
+      session_start,
+      session_finish,
+      tags_ids,
+      psychologist_observations,
+      final_feeling,
+      final_feeling_level,
+      next_steps,
+    } = body;
     const uuid = await this.uuidService.generate();
 
     await this.recordAndDuplicationCheckerService.checkRecords([
       {
         tableName: 'patients',
         fieldValue: patient_uuid,
-        fieldName: 'patient_uuid',
+        fieldName: 'uuid',
+        fieldNameResponse: 'patient_uuid',
         checkType: 'existence',
       },
       {
         tableName: 'demands',
         fieldValue: demand_uuid,
-        fieldName: 'demand_uuid',
+        fieldName: 'uuid',
+        fieldNameResponse: 'demand_uuid',
         checkType: 'existence',
       },
       {
         tableName: 'psychologists',
         fieldValue: psychologist_uuid,
-        fieldName: 'psychologist_uuid',
+        fieldName: 'uuid',
+        fieldNameResponse: 'psychologist_uuid',
         checkType: 'existence',
       },
     ]);
@@ -65,20 +83,20 @@ export class SessionReportsService {
 
     const result = await this.databaseService.query(SQL, [
       uuid,
-      body.patient_uuid,
-      body.demand_uuid,
-      body.psychologist_uuid,
-      body.initial_patient_report,
-      body.initial_feeling,
-      body.initial_feeling_level,
-      body.session_notes,
-      body.session_start,
-      body.session_finish,
-      body.tags_ids,
-      body.psychologist_observations,
-      body.final_feeling,
-      body.final_feeling_level,
-      body.next_steps,
+      patient_uuid,
+      demand_uuid,
+      psychologist_uuid,
+      initial_patient_report,
+      initial_feeling,
+      initial_feeling_level,
+      session_notes,
+      session_start,
+      session_finish,
+      tags_ids,
+      psychologist_observations,
+      final_feeling,
+      final_feeling_level,
+      next_steps,
     ]);
 
     if (result.affectedRows === 0) {
@@ -99,6 +117,38 @@ export class SessionReportsService {
       demand_uuid,
       psychologist_uuid,
     } = query;
+
+    await this.recordAndDuplicationCheckerService.checkRecords([
+      {
+        tableName: 'session_reports',
+        fieldValue: uuid,
+        fieldName: 'uuid',
+        fieldNameResponse: 'uuid',
+        checkType: 'existence',
+      },
+      {
+        tableName: 'session_reports',
+        fieldValue: patient_uuid,
+        fieldName: 'patient_uuid',
+        fieldNameResponse: 'patient_uuid',
+        checkType: 'existence',
+      },
+      {
+        tableName: 'session_reports',
+        fieldValue: demand_uuid,
+        fieldName: 'demand_uuid',
+        fieldNameResponse: 'demand_uuid',
+        checkType: 'existence',
+      },
+      {
+        tableName: 'session_reports',
+        fieldValue: psychologist_uuid,
+        fieldName: 'psychologist_uuid',
+        fieldNameResponse: 'psychologist_uuid',
+        checkType: 'existence',
+      },
+    ]);
+
     const where = [];
     const queryParams = [];
     const offset = (Number(page) - 1) * Number(items_per_page);
@@ -174,24 +224,28 @@ export class SessionReportsService {
         tableName: 'session_reports',
         fieldValue: uuid,
         fieldName: 'uuid',
+        fieldNameResponse: 'uuid',
         checkType: 'existence',
       },
       {
         tableName: 'patients',
         fieldValue: patient_uuid,
-        fieldName: 'patient_uuid',
+        fieldName: 'uuid',
+        fieldNameResponse: 'patient_uuid',
         checkType: 'existence',
       },
       {
         tableName: 'demands',
         fieldValue: demand_uuid,
-        fieldName: 'demand_uuid',
+        fieldName: 'uuid',
+        fieldNameResponse: 'demand_uuid',
         checkType: 'existence',
       },
       {
         tableName: 'psychologists',
         fieldValue: psychologist_uuid,
-        fieldName: 'psychologist_uuid',
+        fieldName: 'uuid',
+        fieldNameResponse: 'psychologist_uuid',
         checkType: 'existence',
       },
     ]);
@@ -229,7 +283,8 @@ export class SessionReportsService {
       {
         tableName: 'session_reports',
         fieldValue: uuid,
-        fieldName: 'Session report',
+        fieldName: 'uuid',
+        fieldNameResponse: 'uuid',
         checkType: 'existence',
       },
     ]);
